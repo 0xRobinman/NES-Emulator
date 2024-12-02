@@ -6,11 +6,8 @@ To download and run the NES emulator, follow these steps:
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/yourusername/nes-emulator.git
-cd nes-emulator
-```
-### Run application
-```bash
+git clone https://github.com/0xRobinman/NES-Emulator.git
+cd NES-Emulator
 gradle build
 gradle run
 ```
