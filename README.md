@@ -25,3 +25,8 @@ This NES emulator is for educational and personal use only. It does not include 
 The software is provided "as is," without warranty of any kind. The developers are not liable for any legal issues or damages resulting from misuse of this application.
 
 By using this emulator, you agree to take full responsibility for your actions.
+
+# Acknowledgements 
+https://www.masswerk.at/6502/6502_instruction_set.html <br>
+http://6502.org/ <br>
+https://www.nesdev.org/ <br>
