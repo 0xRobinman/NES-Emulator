@@ -1,6 +1,6 @@
 # NES Emulator 
 
-## Download &  run
+## Compile &  run
 ```bash
 git clone https://github.com/0xRobinman/NES-Emulator.git
 cd NES-Emulator
