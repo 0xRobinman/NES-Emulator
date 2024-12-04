@@ -328,14 +328,9 @@ public class Instructions {
      * Bit test
      */
     public static void bit_absolute() {
-        // Get the address parts
-        Registers.pc++;
-        byte lowerByte = (byte) (Cpu.fetchNextValue());
-        Registers.pc++; 
-        byte higherByte = (byte) (Cpu.fetchNextValue());
 
         // Convert them to little endian
-        short address = (short) ((higherByte << 8) | lowerByte);
+        short address = fetchAddress();
 
         byte testValue = Ram.read(address);
 
@@ -619,15 +614,9 @@ public class Instructions {
     /**
      * Increment value in memory
      */
-    public static void inc() {
-         // Get the address parts
-         Registers.pc++;
-         byte lowerByte = (byte) (Cpu.fetchNextValue());
-         Registers.pc++; 
-         byte higherByte = (byte) (Cpu.fetchNextValue());
- 
-        // Convert them to little endian
-        short address = (short) ((higherByte << 8) | lowerByte);       
+    public static void inc() { 
+        // Fetch address
+        short address = fetchAddress(); 
 
         // Read and increment value in memory
         byte value = Ram.read(address);
@@ -647,15 +636,9 @@ public class Instructions {
             Debug.printASM(INC_ABSOLUTE, "INC 3");
     }
     public static void inc_absolute_x() {
-
-         // Get the address parts
-         Registers.pc++;
-         byte lowerByte = (byte) (Cpu.fetchNextValue());
-         Registers.pc++; 
-         byte higherByte = (byte) (Cpu.fetchNextValue());
  
         // Convert them to little endian
-        short address = (short) ((higherByte << 8) | lowerByte);       
+        short address = fetchAddress();  
         address =  (short) ( (address + Registers.x) & 0xFFFF );
         
         // Read and increment value in memory
@@ -709,21 +692,15 @@ public class Instructions {
      * Jump to subroutine
      */
     public static void jsr() {
-        // Get the address parts
-        Registers.pc++;
-        byte lowerByte = (byte) (Cpu.fetchNextValue());
-        Registers.pc++; 
-        byte higherByte = (byte) (Cpu.fetchNextValue());
 
-        // Convert them to little endian
-        short address = (short) ((higherByte << 8) | lowerByte);
+        short address = fetchAddress();
         
         // Get the subroutine address to jump to.
         short returnAddress = (short) (Registers.pc - 2);
         
         // Push return address for routine on the stack
-        higherByte =  (byte) ((returnAddress >> 8));
-        lowerByte = (byte) (returnAddress);
+        byte higherByte =  (byte) ((returnAddress >> 8));
+        byte lowerByte = (byte) (returnAddress);
         
         // Store the return address 
         Ram.writeToStack(Registers.sp, lowerByte);
@@ -740,41 +717,55 @@ public class Instructions {
 
     }
     
-    
+    /**
+     * 
+     */
     public static void lda() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA, "LDA");
+            Debug.printASM(LDA, "LDA 1");
     }
+
+    /**
+     * Load a zero page
+     */
     public static void lda_zero_page() {
+
+        // Convert them to little endian
+        short address = fetchAddress();
+
+        // Fetch the value from memory 
+        byte value = Ram.read(address);     
+
+        // Set accumulator value
+        Registers.acc = value;
+
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_ZERO_PAGE, "LDA");
+            Debug.printASM(address, address, "LDA", "$");
     }
     public static void lda_zero_page_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_ZERO_PAGE_X, "LDA");
+            Debug.printASM(LDA_ZERO_PAGE_X, "LDA33");
     }
     public static void lda_absolute() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_ABSOLUTE, "LDA");
+            Debug.printASM(LDA_ABSOLUTE, "LDA 2");
     }
     public static void lda_absolute_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_ABSOLUTE_X, "LDA");
+            Debug.printASM(LDA_ABSOLUTE_X, "LDA 4");
     }
     public static void lda_absolute_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_ABSOLUTE_Y, "LDA");
+            Debug.printASM(LDA_ABSOLUTE_Y, "LDA 5");
     }
     public static void lda_indexed_indirect() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_INDEXED_INDIRECT, "LDA");
+            Debug.printASM(LDA_INDEXED_INDIRECT, "LDA 7");
     }
     public static void lda_indirect_indexed() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_INDIRECT_INDEXED, "LDA");
+            Debug.printASM(LDA_INDIRECT_INDEXED, "LDA 9");
     }
-
-
 
     /**
      * Load the X register (Immediate)
@@ -882,13 +873,7 @@ public class Instructions {
      */
     public static void ora_absolute_x() {
 
-        Registers.pc++;
-        byte lowerByte = Cpu.fetchNextValue();
-        Registers.pc++;
-        byte higherByte = Cpu.fetchNextValue();
-
-        // Convert them to little endian
-        short address = (short) ((higherByte << 8) | lowerByte);        
+        short address = fetchAddress();  
         address = (short) ((address + Registers.acc));
 
         // Fetch the value from memory 
@@ -1155,14 +1140,8 @@ public class Instructions {
      */
     public static void stx_absolute() {
 
-        // Get the address parts
-        Registers.pc++;
-        byte lowerByte = Cpu.fetchNextValue();
-        Registers.pc++;
-        byte higherByte = Cpu.fetchNextValue();
-
-        // Convert them to little endian
-        short address = (short) ((higherByte << 8) | lowerByte);
+        // Get the address 
+        short address = fetchAddress();
         
         Ram.write(address, Registers.x);
 
@@ -1309,11 +1288,7 @@ public class Instructions {
      */
     public static void slo_zero_page_x() {
         // Get the address parts zero page wrap around
-        Registers.pc++;
-        byte lowerByte = (byte) (Cpu.fetchNextValue());
-        Registers.pc++; 
-        byte higherByte = (byte) (Cpu.fetchNextValue());
-        short address = (short) ((higherByte << 8) | lowerByte);
+        short address = fetchAddress();
         
         address = (short) ( (address + Registers.x) & 0xFF);
 
@@ -1455,4 +1430,18 @@ public class Instructions {
         if (ArgsHandler.debug)
             Debug.printASM(KIL_IMPLICIT_92, "KIL");
     }
+
+    private static short fetchAddress() {
+        // Get the address parts
+        Registers.pc++;
+        byte lowerByte = (byte) (Cpu.fetchNextValue());
+        Registers.pc++; 
+        byte higherByte = (byte) (Cpu.fetchNextValue());
+
+        // Convert them to little endian
+        short address = (short) ((higherByte << 8) | lowerByte);
+        
+        return address;
+    }
+
 }

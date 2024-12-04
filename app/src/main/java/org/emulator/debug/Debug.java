@@ -18,6 +18,7 @@ public class Debug {
 
     }
 
+
     public static void printASM(short opcode, short param, String asmString, String addressingMode) {
 
         System.out.println(
@@ -26,7 +27,7 @@ public class Debug {
                 opcode & 0xFF,
                 param & 0xFF,
                 asmString,
-                asmString + " $" + String.format("%04X", param & 0xFF)
+                asmString + " " + addressingMode + String.format("%04X", param)
             )
         );        
 
