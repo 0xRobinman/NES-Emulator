@@ -5,7 +5,7 @@ public class Registers {
     public static byte x;
     public static byte y;
     public static byte status;
-    public static byte sp;
+    public static byte sp = (byte)0xFF;
     public static short pc;
     public static final int CARRY_MASK =        0x00000001;
     public static final int ZERO_MASK =         0x00000010;
@@ -15,4 +15,5 @@ public class Registers {
     public static final int UNUSED_MASK =       0x00100000;
     public static final int OVERFLOW_MASK =     0x01000000;
     public static final int NEGATIVE_MASK =     0x10000000;
+
 }

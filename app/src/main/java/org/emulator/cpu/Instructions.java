@@ -14,6 +14,8 @@ public class Instructions {
     public static final byte ADC_ABSOLUTE_Y = (byte) 0x79;
     public static final byte ADC_INDEXED_INDIRECT = (byte) 0x61;
     public static final byte ADC_INDIRECT_INDEXED = (byte) 0x71;
+    public static final byte AHX_ABSOLUTE_Y = (byte) 0x9F;
+    public static final byte AHX_INDIRECT_Y = (byte) 0x93;
     public static final byte AND = (byte) 0x29;
     public static final byte AND_ZERO_PAGE = (byte) 0x25;
     public static final byte AND_ZERO_PAGE_X = (byte) 0x35;
@@ -79,6 +81,17 @@ public class Instructions {
     public static final byte JMP = (byte) 0x4C;
     public static final byte JMP_INDIRECT = (byte) 0x6C;
     public static final byte JSR = (byte) 0x20;
+    public static final byte KIL_IMPLICIT_02 = (byte) 0x02;
+    public static final byte KIL_IMPLICIT_12 = (byte) 0x12;
+    public static final byte KIL_IMPLICIT_22 = (byte) 0x22;
+    public static final byte KIL_IMPLICIT_32 = (byte) 0x32;
+    public static final byte KIL_IMPLICIT_42 = (byte) 0x42;
+    public static final byte KIL_IMPLICIT_92 = (byte) 0x92;
+    public static final byte LAX_ZERO_PAGE = (byte) 0xA7;
+    public static final byte LAX_ABSOLUTE = (byte) 0xAF;
+    public static final byte LAX_INDIRECT_Y = (byte) 0xB3;
+    public static final byte LAX_ZERO_PAGE_Y = (byte) 0xB7;
+    public static final byte LAX_ABSOLUTE_Y = (byte) 0xBF;
     public static final byte LDA = (byte) 0xA9;
     public static final byte LDA_ZERO_PAGE = (byte) 0xA5;
     public static final byte LDA_ZERO_PAGE_X = (byte) 0xB5;
@@ -115,6 +128,8 @@ public class Instructions {
     public static final byte PHP = (byte) 0x08;
     public static final byte PLA = (byte) 0x68;
     public static final byte PLP = (byte) 0x28;
+    public static final byte PADDING = (byte) 0xFF;
+    public static final byte PADDING_ZERO = (byte) 0x00;
     public static final byte RLA_ZERO_PAGE = (byte) 0x27;
     public static final byte RLA_ZERO_PAGE_X = (byte) 0x37;
     public static final byte RLA_ABSOLUTE = (byte) 0x2F;
@@ -132,8 +147,18 @@ public class Instructions {
     public static final byte ROR_ZERO_PAGE_X = (byte) 0x76;
     public static final byte ROR_ABSOLUTE = (byte) 0x6E;
     public static final byte ROR_ABSOLUTE_X = (byte) 0x7E;
+    public static final byte RRA_INDIRECT_X = (byte) 0x63;
+    public static final byte RRA_ZERO_PAGE = (byte) 0x67;
+    public static final byte RRA_ABSOLUTE = (byte) 0x6F;
+    public static final byte RRA_INDIRECT_Y = (byte) 0x73;
+    public static final byte RRA_ZERO_PAGE_X = (byte) 0x77;
+    public static final byte RRA_ABSOLUTE_Y = (byte) 0x7B;
+    public static final byte RRA_ABSOLUTE_X = (byte) 0x7F;
     public static final byte RTI = (byte) 0x40;
     public static final byte RTS = (byte) 0x60;
+    public static final byte SAX_ZERO_PAGE = (byte) 0x87;
+    public static final byte SAX_ABSOLUTE = (byte) 0x8F;
+    public static final byte SAX_ZERO_PAGE_Y = (byte) 0x97;
     public static final byte SBC = (byte) 0xE9;
     public static final byte SBC_ZERO_PAGE = (byte) 0xE5;
     public static final byte SBC_ZERO_PAGE_X = (byte) 0xF5;
@@ -159,6 +184,13 @@ public class Instructions {
     public static final byte STA_ABSOLUTE_Y = (byte) 0x99;
     public static final byte STA_INDEXED_INDIRECT = (byte) 0x81;
     public static final byte STA_INDIRECT_INDEXED = (byte) 0x91;
+    public static final byte SRE_INDIRECT_X = (byte) 0x43;
+    public static final byte SRE_ZERO_PAGE = (byte) 0x47;
+    public static final byte SRE_ABSOLUTE = (byte) 0x4F;
+    public static final byte SRE_INDIRECT_Y = (byte) 0x53;
+    public static final byte SRE_ZERO_PAGE_X = (byte) 0x57;
+    public static final byte SRE_ABSOLUTE_Y = (byte) 0x5B;
+    public static final byte SRE_ABSOLUTE_X = (byte) 0x5F;
     public static final byte STX = (byte) 0x86;
     public static final byte STX_ZERO_PAGE_Y = (byte) 0x96;
     public static final byte STX_ABSOLUTE = (byte) 0x8E;
@@ -171,6 +203,9 @@ public class Instructions {
     public static final byte TXA = (byte) 0x8A;
     public static final byte TXS = (byte) 0x9A;
     public static final byte TYA = (byte) 0x98;
+    public static final byte SBC_IMMEDIATE = (byte) 0xEB;
+    public static final byte SHY_ABSOLUTE_X = (byte) 0x9C;
+    public static final byte SHX_ABSOLUTE_Y = (byte) 0x9E;
 
     /**
      * ADD operation with carry
@@ -245,6 +280,8 @@ public class Instructions {
     }
 
     public static void asl() {
+
+
         if (ArgsHandler.debug) 
             Debug.printASM(ASL, "ASL");
     }
@@ -279,7 +316,9 @@ public class Instructions {
             Debug.printASM(BEQ, "BEQ");
     }
 
-
+    /**
+     * 
+     */
     public static void bit() {
         if (ArgsHandler.debug) 
             Debug.printASM(BIT, "BIT i");
@@ -291,9 +330,9 @@ public class Instructions {
     public static void bit_absolute() {
         // Get the address parts
         Registers.pc++;
-        byte lowerByte = (byte) (Cpu.fetchNextValue() & 0xFF);
+        byte lowerByte = (byte) (Cpu.fetchNextValue());
         Registers.pc++; 
-        byte higherByte = (byte) (Cpu.fetchNextValue() & 0xFF);
+        byte higherByte = (byte) (Cpu.fetchNextValue());
 
         // Convert them to little endian
         short address = (short) ((higherByte << 8) | lowerByte);
@@ -343,15 +382,47 @@ public class Instructions {
 
         // Branch by the relative address.
         if ((Registers.status & Registers.NEGATIVE_MASK) == 0) {
-            Registers.pc += relativeAddress & 0xFF;
+            System.out.println("Branching.");
+            Registers.pc += relativeAddress;
+            Registers.pc--;
         }
 
-        Registers.pc--;
 
         if (ArgsHandler.debug) 
             Debug.printASM(BPL, "BPL");
     }
+
+    /**
+     *  Force a break
+     */
     public static void brk() {
+        
+        // Return to BRK + 2 but + 1 since opcode ( next instruction )
+        short returnAddress = (short) (Registers.pc + 2);
+        
+        // Push return address for routine on the stack
+        byte higherByte =  (byte) ((returnAddress >> 8));
+        byte lowerByte = (byte) (returnAddress);
+        
+        // Store the return address of next instruction onto the stack
+        Ram.writeToStack(Registers.sp, lowerByte);
+        Registers.sp--;
+        Ram.writeToStack(Registers.sp, higherByte);
+        Registers.sp--;
+        
+        // Set interrupt flag
+        sei();
+
+        // Set break flag
+        Registers.status |= Registers.BREAK_MASK;
+
+        // Get interrupt vector 
+        lowerByte = Ram.read((short)0xFFFE);
+        higherByte = Ram.read((short)0xFFFF);
+        
+        // Set PC to new address (little endian)
+        Registers.pc = (short)((higherByte << 8) | lowerByte);
+        Registers.pc--;
 
         if (ArgsHandler.debug) 
             Debug.printASM(BRK, "BRK");
@@ -364,25 +435,58 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(BVS, "BVS");
     }
+
+    /**
+     * Clear the carry flag
+     */
     public static void clc() {
+
+        Registers.status &= ~Registers.CARRY_MASK;
+
         if (ArgsHandler.debug) 
             Debug.printASM(CLC, "CLC");
     }
+
+    /**
+     * CLear decimal flag
+     */
     public static void cld() {
+
+        Registers.status &= ~Registers.DECIMAL_MASK;
+
         if (ArgsHandler.debug) 
             Debug.printASM(CLD, "CLD");
     }
+
+    /**
+     * Clear interrupt 
+     */
     public static void cli() {
+
+        Registers.status &= ~Registers.INTERRUPT_MASK;
+
         if (ArgsHandler.debug) 
             Debug.printASM(CLI, "CLI");
     }
+
+    /**
+     * Clear overflow flag
+     */
     public static void clv() {
+
+        Registers.status &= ~Registers.OVERFLOW_MASK;
+
         if (ArgsHandler.debug) 
             Debug.printASM(CLV, "CLV");
     }
     
-    
+    /**
+     * 
+     */
     public static void cmp() {
+
+        Registers.status &= ~Registers.OVERFLOW_MASK;
+
         if (ArgsHandler.debug) 
             Debug.printASM(CMP, "CMP");
     }
@@ -512,22 +616,57 @@ public class Instructions {
     }
 
 
-
+    /**
+     * Increment value in memory
+     */
     public static void inc() {
+         // Get the address parts
+         Registers.pc++;
+         byte lowerByte = (byte) (Cpu.fetchNextValue());
+         Registers.pc++; 
+         byte higherByte = (byte) (Cpu.fetchNextValue());
+ 
+        // Convert them to little endian
+        short address = (short) ((higherByte << 8) | lowerByte);       
+
+        // Read and increment value in memory
+        byte value = Ram.read(address);
+        value++;
+        Ram.write(address, value);
+
+
         if (ArgsHandler.debug) 
-            Debug.printASM(INC, "INC");
+            Debug.printASM(INC, "INC 1");
     }
     public static void inc_zero_page_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(INC_ZERO_PAGE_X, "INC");
+            Debug.printASM(INC_ZERO_PAGE_X, "INC 2");
     }
     public static void inc_absolute() {
         if (ArgsHandler.debug) 
-            Debug.printASM(INC_ABSOLUTE, "INC");
+            Debug.printASM(INC_ABSOLUTE, "INC 3");
     }
     public static void inc_absolute_x() {
+
+         // Get the address parts
+         Registers.pc++;
+         byte lowerByte = (byte) (Cpu.fetchNextValue());
+         Registers.pc++; 
+         byte higherByte = (byte) (Cpu.fetchNextValue());
+ 
+        // Convert them to little endian
+        short address = (short) ((higherByte << 8) | lowerByte);       
+        address =  (short) ( (address + Registers.x) & 0xFFFF );
+        
+        // Read and increment value in memory
+        byte value = Ram.read(address);
+        value++;
+        Ram.write(address, value);
+
+
+
         if (ArgsHandler.debug) 
-            Debug.printASM(INC_ABSOLUTE_X, "INC");
+            Debug.printASM(INC_ABSOLUTE_X, "INC 4");
     }
 
     /**
@@ -572,9 +711,9 @@ public class Instructions {
     public static void jsr() {
         // Get the address parts
         Registers.pc++;
-        byte lowerByte = (byte) (Cpu.fetchNextValue() & 0xFF);
+        byte lowerByte = (byte) (Cpu.fetchNextValue());
         Registers.pc++; 
-        byte higherByte = (byte) (Cpu.fetchNextValue() & 0xFF);
+        byte higherByte = (byte) (Cpu.fetchNextValue());
 
         // Convert them to little endian
         short address = (short) ((higherByte << 8) | lowerByte);
@@ -583,23 +722,22 @@ public class Instructions {
         short returnAddress = (short) (Registers.pc - 2);
         
         // Push return address for routine on the stack
-        higherByte =  (byte) ((returnAddress >> 8) & 0xFF);
-        lowerByte = (byte) (returnAddress & 0xFF);
+        higherByte =  (byte) ((returnAddress >> 8));
+        lowerByte = (byte) (returnAddress);
         
         // Store the return address 
-        Ram.write((short) (0x0100 + Registers.sp), lowerByte);
+        Ram.writeToStack(Registers.sp, lowerByte);
         Registers.sp--;
-        Ram.write((short) (0x0100 + Registers.sp), higherByte);
+        Ram.writeToStack(Registers.sp, higherByte);
         Registers.sp--;
         
         // Set program counter to the subroutine location
-        Registers.pc = (short) (address & 0xFFFF);
-        
-        // Decrement program counter as each loop increments
+        Registers.pc = (short) (address);
         Registers.pc--;
 
         if (ArgsHandler.debug) 
             Debug.printASM(JSR, address, "JSR", "$");
+
     }
     
     
@@ -642,12 +780,13 @@ public class Instructions {
      * Load the X register (Immediate)
      */
     public static void ldx() {
-        if (ArgsHandler.debug) 
-            Debug.printASM(LDX, Registers.x, "LDX", "#");
-
         // Get the next instruction
         Registers.pc++;
         Registers.x = Cpu.fetchNextValue();
+        
+        if (ArgsHandler.debug) 
+            Debug.printASM(LDX, Registers.x, "LDX", "#");
+
     }
     public static void ldx_zero_page() {
         if (ArgsHandler.debug) 
@@ -750,7 +889,7 @@ public class Instructions {
 
         // Convert them to little endian
         short address = (short) ((higherByte << 8) | lowerByte);        
-        address = (short) ((address + Registers.acc) & 0xFFFF);
+        address = (short) ((address + Registers.acc));
 
         // Fetch the value from memory 
         byte value = Ram.read(address);
@@ -904,12 +1043,55 @@ public class Instructions {
             Debug.printASM(SBC_INDIRECT_INDEXED, "SBC");
     }
     
+    public static void sre_indirect_x() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SRE_INDIRECT_X, "SRE");
+    }
+    
+    public static void sre_zero_page() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SRE_ZERO_PAGE, "SRE");
+    }
+    
+    public static void sre_absolute() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SRE_ABSOLUTE, "SRE");
+    }
+    
+    public static void sre_indirect_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SRE_INDIRECT_Y, "SRE");
+    }
+    
+    public static void sre_zero_page_x() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SRE_ZERO_PAGE_X, "SRE");
+    }
+    
+    public static void sre_absolute_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SRE_ABSOLUTE_Y, "SRE");
+    }
+    
+    public static void sre_absolute_x() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SRE_ABSOLUTE_X, "SRE");
+    }
+    
+
 
     public static void sec() {
         if (ArgsHandler.debug) 
             Debug.printASM(SEC, "SEC");
-    }
+    }  
+
+    /**
+     * Set Decimal flag
+     */
     public static void sed() {
+
+        Registers.status |= Registers.DECIMAL_MASK;
+
         if (ArgsHandler.debug) 
             Debug.printASM(SED, "SED");
     }
@@ -918,7 +1100,9 @@ public class Instructions {
      * Set interrupt disable status
      */
     public static void sei() {
-        Registers.status |= 0x04;
+        
+        Registers.status |= Registers.INTERRUPT_MASK;
+
         if (ArgsHandler.debug)
             Debug.printASM(SEI, "SEI");
         
@@ -1076,6 +1260,43 @@ public class Instructions {
             Debug.printASM(RLA_INDIRECT_INDEXED, "RLA");
     }
     
+    public static void rra_indirect_x() {
+        if (ArgsHandler.debug)
+            Debug.printASM(RRA_INDIRECT_X, "RRA");
+    }
+    
+    public static void rra_zero_page() {
+        if (ArgsHandler.debug)
+            Debug.printASM(RRA_ZERO_PAGE, "RRA");
+    }
+    
+    public static void rra_absolute() {
+        if (ArgsHandler.debug)
+            Debug.printASM(RRA_ABSOLUTE, "RRA");
+    }
+    
+    public static void rra_indirect_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(RRA_INDIRECT_Y, "RRA");
+    }
+    
+    public static void rra_zero_page_x() {
+        if (ArgsHandler.debug)
+            Debug.printASM(RRA_ZERO_PAGE_X, "RRA");
+    }
+    
+    public static void rra_absolute_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(RRA_ABSOLUTE_Y, "RRA");
+    }
+    
+    public static void rra_absolute_x() {
+        if (ArgsHandler.debug)
+            Debug.printASM(RRA_ABSOLUTE_X, "RRA");
+    }
+    
+
+
     public static void slo_zero_page() {
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ZERO_PAGE, "SLO1");
@@ -1083,9 +1304,31 @@ public class Instructions {
     
 
     /**
-     * 
+     * Homebrew function
+     * Combination between ASL and ORA
      */
     public static void slo_zero_page_x() {
+        // Get the address parts zero page wrap around
+        Registers.pc++;
+        byte lowerByte = (byte) (Cpu.fetchNextValue());
+        Registers.pc++; 
+        byte higherByte = (byte) (Cpu.fetchNextValue());
+        short address = (short) ((higherByte << 8) | lowerByte);
+        
+        address = (short) ( (address + Registers.x) & 0xFF);
+
+        // Get value at address
+        byte value = Ram.read(address);
+
+
+        // Perform ASL on value
+
+
+
+        // ORA
+        Registers.acc |= value;
+
+
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ZERO_PAGE_X, "SLO2");
     }
@@ -1119,5 +1362,97 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_INDIRECT_INDEXED, "SLO7");
     }
+
+    public static void lax_zero_page() {
+        if (ArgsHandler.debug)
+            Debug.printASM(LAX_ZERO_PAGE, "LAX");
+    }
     
+    public static void lax_absolute() {
+        if (ArgsHandler.debug)
+            Debug.printASM(LAX_ABSOLUTE, "LAX");
+    }
+    
+    public static void lax_indirect_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(LAX_INDIRECT_Y, "LAX");
+    }
+    
+    public static void lax_zero_page_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(LAX_ZERO_PAGE_Y, "LAX");
+    }
+    
+    public static void lax_absolute_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(LAX_ABSOLUTE_Y, "LAX");
+    }
+    
+    public static void sax_zero_page() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SAX_ZERO_PAGE, "SAX");
+    }
+    
+    public static void sax_absolute() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SAX_ABSOLUTE, "SAX");
+    }
+    
+    public static void sax_zero_page_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SAX_ZERO_PAGE_Y, "SAX");
+    }
+    public static void sbc_immediate() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SBC_IMMEDIATE, "SBC");
+    }
+    
+    public static void ahx_absolute_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(AHX_ABSOLUTE_Y, "AHX");
+    }
+    
+    public static void ahx_indirect_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(AHX_INDIRECT_Y, "AHX");
+    }
+    
+    public static void shy_absolute_x() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SHY_ABSOLUTE_X, "SHY");
+    }
+    
+    public static void shx_absolute_y() {
+        if (ArgsHandler.debug)
+            Debug.printASM(SHX_ABSOLUTE_Y, "SHX");
+    }
+    public static void kil_implicit_02() {
+        if (ArgsHandler.debug)
+            Debug.printASM(KIL_IMPLICIT_02, "KIL");
+    }
+    
+    public static void kil_implicit_12() {
+        if (ArgsHandler.debug)
+            Debug.printASM(KIL_IMPLICIT_12, "KIL");
+    }
+    
+    public static void kil_implicit_22() {
+        if (ArgsHandler.debug)
+            Debug.printASM(KIL_IMPLICIT_22, "KIL");
+    }
+    
+    public static void kil_implicit_32() {
+        if (ArgsHandler.debug)
+            Debug.printASM(KIL_IMPLICIT_32, "KIL");
+    }
+    
+    public static void kil_implicit_42() {
+        if (ArgsHandler.debug)
+            Debug.printASM(KIL_IMPLICIT_42, "KIL");
+    }
+    
+    public static void kil_implicit_92() {
+        if (ArgsHandler.debug)
+            Debug.printASM(KIL_IMPLICIT_92, "KIL");
+    }
 }

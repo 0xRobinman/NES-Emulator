@@ -82,7 +82,7 @@ public class Emulator {
                     throw new IOException("Not in '.NES' format");
             }
 
-            int programROMSize = header[4] << 14,
+            int programROMSize = (header[4] << 14),
                 characterRomSize = header[5] << 13;
             
             // Handle flags 6/7.
@@ -104,7 +104,7 @@ public class Emulator {
 
             if (verbose) 
                 Debug.printDebug("Loaded PGROM", true);
-    
+            
             if (programRomSizeKB == 16) {
                 Ram.write((short)0x8000, programROM);
                 Ram.write((short)0xC000, programROM);
@@ -113,11 +113,9 @@ public class Emulator {
             }
             
             if (characterRomSizeKB != 0) {
-                
                 if (inputStream.read(characterROM) != characterRomSize) 
                     throw new IOException("Invalid file format.");
                 Ram.write((short)0x0000, characterROM);
-                
                 if (verbose)
                     Debug.printDebug("Loaded CHROM", true);
             }
@@ -163,14 +161,6 @@ public class Emulator {
         while(true) {
             cpu.executeCycle();
         }
-    }
-
-    /**
-     * Test the class with gradle.
-     * @return Welcome message
-     */
-    public String getGreeting() {
-        return "Welcome to the NES Emulator!";
     }
 
     public static void main(String[] args) {

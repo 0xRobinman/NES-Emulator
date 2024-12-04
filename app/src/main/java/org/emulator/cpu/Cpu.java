@@ -158,6 +158,8 @@ public class Cpu {
         opcodeToInstruction.put((byte)0xF4, Instructions::nop);
         opcodeToInstruction.put((byte)0xFA, Instructions::nop);
         opcodeToInstruction.put((byte)0xFC, Instructions::nop);
+        opcodeToInstruction.put((byte)Instructions.PADDING, Instructions::nop);
+        opcodeToInstruction.put((byte)Instructions.PADDING_ZERO, Instructions::nop);
 
         
         opcodeToInstruction.put(Instructions.ORA, Instructions::ora);
@@ -218,7 +220,7 @@ public class Cpu {
         opcodeToInstruction.put(Instructions.SLO_ABSOLUTE_Y, Instructions::slo_absolute_y);
         opcodeToInstruction.put(Instructions.SLO_INDEXED_INDIRECT, Instructions::slo_indexed_indirect);
         opcodeToInstruction.put(Instructions.SLO_INDIRECT_INDEXED, Instructions::slo_indirect_indexed);
-
+        
         opcodeToInstruction.put(Instructions.STA, Instructions::sta);
         opcodeToInstruction.put(Instructions.STA_ZERO_PAGE_X, Instructions::sta_zero_page_x);
         opcodeToInstruction.put(Instructions.STA_ABSOLUTE, Instructions::sta_absolute);
@@ -241,6 +243,47 @@ public class Cpu {
         opcodeToInstruction.put(Instructions.TXA, Instructions::txa);
         opcodeToInstruction.put(Instructions.TXS, Instructions::txs);
         opcodeToInstruction.put(Instructions.TYA, Instructions::tya);
+
+        opcodeToInstruction.put(Instructions.SRE_INDIRECT_X, Instructions::sre_indirect_x);
+        opcodeToInstruction.put(Instructions.SRE_ZERO_PAGE, Instructions::sre_zero_page);
+        opcodeToInstruction.put(Instructions.SRE_ABSOLUTE, Instructions::sre_absolute);
+        opcodeToInstruction.put(Instructions.SRE_INDIRECT_Y, Instructions::sre_indirect_y);
+        opcodeToInstruction.put(Instructions.SRE_ZERO_PAGE_X, Instructions::sre_zero_page_x);
+        opcodeToInstruction.put(Instructions.SRE_ABSOLUTE_Y, Instructions::sre_absolute_y);
+        opcodeToInstruction.put(Instructions.SRE_ABSOLUTE_X, Instructions::sre_absolute_x);
+        
+        opcodeToInstruction.put(Instructions.RRA_INDIRECT_X, Instructions::rra_indirect_x);
+        opcodeToInstruction.put(Instructions.RRA_ZERO_PAGE, Instructions::rra_zero_page);
+        opcodeToInstruction.put(Instructions.RRA_ABSOLUTE, Instructions::rra_absolute);
+        opcodeToInstruction.put(Instructions.RRA_INDIRECT_Y, Instructions::rra_indirect_y);
+        opcodeToInstruction.put(Instructions.RRA_ZERO_PAGE_X, Instructions::rra_zero_page_x);
+        opcodeToInstruction.put(Instructions.RRA_ABSOLUTE_Y, Instructions::rra_absolute_y);
+        opcodeToInstruction.put(Instructions.RRA_ABSOLUTE_X, Instructions::rra_absolute_x);
+        
+        
+        opcodeToInstruction.put(Instructions.LAX_ZERO_PAGE, Instructions::lax_zero_page);
+        opcodeToInstruction.put(Instructions.LAX_ABSOLUTE, Instructions::lax_absolute);
+        opcodeToInstruction.put(Instructions.LAX_INDIRECT_Y, Instructions::lax_indirect_y);
+        opcodeToInstruction.put(Instructions.LAX_ZERO_PAGE_Y, Instructions::lax_zero_page_y);
+        opcodeToInstruction.put(Instructions.LAX_ABSOLUTE_Y, Instructions::lax_absolute_y);
+        
+        opcodeToInstruction.put(Instructions.SAX_ZERO_PAGE, Instructions::sax_zero_page);
+        opcodeToInstruction.put(Instructions.SAX_ABSOLUTE, Instructions::sax_absolute);
+        opcodeToInstruction.put(Instructions.SAX_ZERO_PAGE_Y, Instructions::sax_zero_page_y);
+        
+        opcodeToInstruction.put(Instructions.SBC_IMMEDIATE, Instructions::sbc_immediate);
+        opcodeToInstruction.put(Instructions.AHX_ABSOLUTE_Y, Instructions::ahx_absolute_y);
+        opcodeToInstruction.put(Instructions.AHX_INDIRECT_Y, Instructions::ahx_indirect_y);
+        opcodeToInstruction.put(Instructions.SHY_ABSOLUTE_X, Instructions::shy_absolute_x);
+        opcodeToInstruction.put(Instructions.SHX_ABSOLUTE_Y, Instructions::shx_absolute_y);
+        
+        opcodeToInstruction.put(Instructions.KIL_IMPLICIT_02, Instructions::kil_implicit_02);
+        opcodeToInstruction.put(Instructions.KIL_IMPLICIT_12, Instructions::kil_implicit_12);
+        opcodeToInstruction.put(Instructions.KIL_IMPLICIT_22, Instructions::kil_implicit_22);
+        opcodeToInstruction.put(Instructions.KIL_IMPLICIT_32, Instructions::kil_implicit_32);
+        opcodeToInstruction.put(Instructions.KIL_IMPLICIT_42, Instructions::kil_implicit_42);
+        opcodeToInstruction.put(Instructions.KIL_IMPLICIT_92, Instructions::kil_implicit_92);
+        
     }
 
 
