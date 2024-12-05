@@ -279,27 +279,38 @@ public class Instructions {
             Debug.printASM(AND_INDIRECT_INDEXED, "AND");
     }
 
+
+
+    /**
+     * Arithmetic shift left.
+     */
     public static void asl() {
 
 
         if (ArgsHandler.debug) 
-            Debug.printASM(ASL, "ASL");
+            Debug.printASM(ASL, "ASL 1");
     }
     public static void asl_zero_page() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ASL_ZERO_PAGE, "ASL");
+            Debug.printASM(ASL_ZERO_PAGE, "ASL 2");
     }
     public static void asl_zero_page_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ASL_ZERO_PAGE_X, "ASL");
+            Debug.printASM(ASL_ZERO_PAGE_X, "ASL 3");
     }
     public static void asl_absolute() {
+
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+        value <<= 1;
+        Ram.write(address, value);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(ASL_ABSOLUTE, "ASL");
+            Debug.printASM(ASL_ABSOLUTE, "ASL 4");
     }
     public static void asl_absolute_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ASL_ABSOLUTE_X, "ASL");
+            Debug.printASM(ASL_ABSOLUTE_X, "ASL 5");
     }
 
 
@@ -363,6 +374,10 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(BMI, "BMI");
     }
+
+    /**
+     * Branch not equals
+     */
     public static void bne() {
         if (ArgsHandler.debug) 
             Debug.printASM(BNE, "BNE");
@@ -645,8 +660,6 @@ public class Instructions {
         byte value = Ram.read(address);
         value++;
         Ram.write(address, value);
-
-
 
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ABSOLUTE_X, "INC 4");
@@ -985,13 +998,32 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(ROR_ABSOLUTE_X, "ROR");
     }
-
-
     public static void rti() {
         if (ArgsHandler.debug) 
             Debug.printASM(RTI, "RTI");
     }
+
+    /**
+     * Return to sub routine.
+     *         
+        // Store the return address of next instruction onto the stack
+        Ram.writeToStack(Registers.sp, lowerByte);
+        Registers.sp--;
+        Ram.writeToStack(Registers.sp, higherByte);
+        Registers.sp--;
+     */
     public static void rts() {
+
+        // Fetch address off the stack
+        Registers.sp++;
+        byte higherByte = Ram.popFromStack(Registers.sp);
+        Registers.sp++;
+        byte lowerByte = Ram.popFromStack(Registers.sp);
+        short address = (short) ((higherByte << 8) | (lowerByte & 0xFF));
+
+        // Return to previous address
+        Registers.pc = address; 
+
         if (ArgsHandler.debug) 
             Debug.printASM(RTS, "RTS");
     }
@@ -1028,39 +1060,50 @@ public class Instructions {
             Debug.printASM(SBC_INDIRECT_INDEXED, "SBC");
     }
     
+
+    /**
+     * Shift right XOR
+     */
     public static void sre_indirect_x() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_INDIRECT_X, "SRE");
+            Debug.printASM(SRE_INDIRECT_X, "SRE 1");
     }
     
     public static void sre_zero_page() {
+
+        short address = (short) (fetchAddress() & 0xFF);
+        byte value = Ram.read(address);
+        Registers.status &= (value & Registers.CARRY_MASK);
+        value >>>= 1;
+        Ram.write(address, value);
+        Registers.acc ^= value;
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_ZERO_PAGE, "SRE");
+            Debug.printASM(SRE_ZERO_PAGE, "SRE 2");
     }
     
     public static void sre_absolute() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_ABSOLUTE, "SRE");
+            Debug.printASM(SRE_ABSOLUTE, "SRE3 ");
     }
     
     public static void sre_indirect_y() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_INDIRECT_Y, "SRE");
+            Debug.printASM(SRE_INDIRECT_Y, "SRE4");
     }
     
     public static void sre_zero_page_x() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_ZERO_PAGE_X, "SRE");
+            Debug.printASM(SRE_ZERO_PAGE_X, "SRE5");
     }
     
     public static void sre_absolute_y() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_ABSOLUTE_Y, "SRE");
+            Debug.printASM(SRE_ABSOLUTE_Y, "SRE6");
     }
     
     public static void sre_absolute_x() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_ABSOLUTE_X, "SRE");
+            Debug.printASM(SRE_ABSOLUTE_X, "SRE7");
     }
     
 
@@ -1163,19 +1206,73 @@ public class Instructions {
             Debug.printASM(STY_ABSOLUTE, "STY");
     }
 
+    /**
+     * Transfer Accumulator to X
+     */
     public static void tax() {
+
+        Registers.x = Registers.acc;
+    
+        if (Registers.x == 0x00)
+            Registers.status |= 0x00000010; // Set Zero flag to 1
+        else
+            Registers.status &= 0x11111101; // Set Zero flag to 0
+
+        if ((Registers.x & 0x80) != 0x00)
+            Registers.status |= 0x10000000; // Set N Register
+        else
+            Registers.status &= 0x01111111; // Clear N Register
+        
         if (ArgsHandler.debug) 
             Debug.printASM(TAX, "TAX");
     }
+
+    /**
+     * Transfer accumulator to Y
+     */
     public static void tay() {
+        Registers.y = Registers.acc;
+
+        if (Registers.y == 0x00)
+            Registers.status |= 0x00000010; // Set Zero flag to 1
+        else
+            Registers.status &= 0x11111101; // Set Zero flag to 0
+
+        if ((Registers.y & 0x80) != 0x00)
+            Registers.status |= 0x10000000; // Set N Register
+        else
+            Registers.status &= 0x01111111; // Clear N Register
         if (ArgsHandler.debug) 
             Debug.printASM(TAY, "TAY");
     }
+
+    /**
+     * Transfer X to stack pointer
+     */
     public static void tsx() {
+
+        Registers.sp = Registers.x;
         if (ArgsHandler.debug) 
             Debug.printASM(TSX, "TSX");
     }
+
+    /**
+     * Transfer X to accumulator 
+     */
     public static void txa() {
+
+        Registers.acc = Registers.x;
+    
+        if (Registers.acc == 0x00)
+            Registers.status |= 0x00000010; // Set Zero flag to 1
+        else
+            Registers.status &= 0x11111101; // Set Zero flag to 0
+
+        if ((Registers.x & 0x80) != 0x00)
+            Registers.status |= 0x10000000; // Set N Register
+        else
+            Registers.status &= 0x01111111; // Clear N Register
+
         if (ArgsHandler.debug) 
             Debug.printASM(TXA, "TXA");
     }
@@ -1200,7 +1297,24 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(TXS, "TXS");
     }
+
+    /**
+     * Transfer Y to accumulator
+     */
     public static void tya() {
+
+        Registers.acc = Registers.y;
+
+        if (Registers.acc == 0x00)
+            Registers.status |= 0x00000010; // Set Zero flag to 1
+        else
+            Registers.status &= 0x11111101; // Set Zero flag to 0
+
+        if ((Registers.acc & 0x80) != 0x00)
+            Registers.status |= 0x10000000; // Set N Register
+        else
+            Registers.status &= 0x01111111; // Clear N Register
+
         if (ArgsHandler.debug) 
             Debug.printASM(TYA, "TYA");
     }
@@ -1275,17 +1389,31 @@ public class Instructions {
     }
     
 
-
-    public static void slo_zero_page() {
-        if (ArgsHandler.debug) 
-            Debug.printASM(SLO_ZERO_PAGE, "SLO1");
-    }
-    
-
     /**
      * Homebrew function
      * Combination between ASL and ORA
      */
+    public static void slo_zero_page() {
+        // Get the address parts zero page wrap around
+        short address = fetchAddress();
+                
+        address &= (short)(0xFF);
+
+        // Get value at address
+        byte value = Ram.read(address);
+
+        // Perform ASL on value
+        value <<= 1;
+
+        // ORA
+        Registers.acc |= value;
+
+        Ram.write(address, value);
+
+        if (ArgsHandler.debug) 
+            Debug.printASM(SLO_ZERO_PAGE, "SLO1");
+    }
+
     public static void slo_zero_page_x() {
         // Get the address parts zero page wrap around
         short address = fetchAddress();
@@ -1297,12 +1425,12 @@ public class Instructions {
 
 
         // Perform ASL on value
-
-
+        value <<= 1;
 
         // ORA
         Registers.acc |= value;
 
+        Ram.write(address, value);
 
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ZERO_PAGE_X, "SLO2");

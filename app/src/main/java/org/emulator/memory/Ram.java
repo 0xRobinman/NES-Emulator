@@ -18,5 +18,7 @@ public class Ram {
     public static void writeToStack(short address, byte value) {
         memory[0x0100 + address] = value;
     }
-
+    public static byte popFromStack(short address) {
+        return (memory[0x0100 + address]);
+    }
 }
