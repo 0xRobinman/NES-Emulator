@@ -17,9 +17,11 @@ public class Ppu extends JPanel {
 
 
 
+
+
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g); // Ensures the panel is cleared before repainting
+        super.paintComponent(g);
         
     }
 
