@@ -15,5 +15,4 @@ public class Registers {
     public static final int UNUSED_MASK =       0x00100000;
     public static final int OVERFLOW_MASK =     0x01000000;
     public static final int NEGATIVE_MASK =     0x10000000;
-
 }
