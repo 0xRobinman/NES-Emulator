@@ -14,6 +14,7 @@ import org.emulator.arg.ArgsHandler;
 import org.emulator.cpu.Cpu;
 import org.emulator.debug.Debug;
 import org.emulator.memory.Ram;
+import org.emulator.ppu.Ppu;
 
 
 public class Emulator {
@@ -25,6 +26,17 @@ public class Emulator {
     public Emulator(ArgsHandler argsHandler) {
         this.verbose = argsHandler.getVerbose();
     }
+    
+    private JFrame createWindow() {
+        JFrame window;
+        window = new JFrame("NES Emulator");
+        window.setSize(768, 720);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setResizable(false);
+        window.setLocationRelativeTo(null);
+        return window;
+    }
+
     
 
     private File getInputFile() {
@@ -57,17 +69,6 @@ public class Emulator {
         }
 
         return null;
-    }
-
-    private JFrame renderWindow() {
-        JFrame window;
-        window = new JFrame("NES Emulator");
-        window.setSize(768, 720);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setResizable(false);
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
-        return window;
     }
 
     private void parseHeader(InputStream inputStream) throws IOException {
@@ -151,15 +152,24 @@ public class Emulator {
         if ((inputFile = getInputFile()) == null) 
             return;
         
+        JFrame window = createWindow();
+        
         // Handle the input file and load game into memory
         loadIntoMemory(inputFile);
 
-        JFrame gameWindow = renderWindow();
         Cpu cpu = new Cpu();
         cpu.readResetVector();
 
+        // Start graphics processing
+        Ppu ppu = new Ppu();
+        window.add(ppu);
+        window.setVisible(true);
+
+        
+        // Start CPU.
         while(true) {
             cpu.executeCycle();
+            ppu.repaint();
         }
     }
 

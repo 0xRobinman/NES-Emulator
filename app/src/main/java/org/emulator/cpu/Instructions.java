@@ -279,7 +279,7 @@ public class Instructions {
             Debug.printASM(AND_INDIRECT_INDEXED, "AND");
     }
 
-
+    
 
     /**
      * Arithmetic shift left.
