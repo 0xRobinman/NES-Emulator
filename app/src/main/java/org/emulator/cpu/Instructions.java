@@ -591,38 +591,47 @@ public class Instructions {
             Debug.printASM(DEY, "DEY");
     }
 
-
+    /**
+     * Exclusive OR (XOR)
+     */
     public static void eor() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR, "EOR");
+            Debug.printASM(EOR, "EOR 1");
     }
-    public static void eor_zero_page() {
+    public static void eor_zero_page() {        
+        short address = (short) (fetchAddress() & 0xFF);
+
+        byte value = Ram.read(address);
+
+        Registers.acc ^= value;
+
+
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_ZERO_PAGE, "EOR");
+            Debug.printASM(EOR_ZERO_PAGE, "EOR 2");
     }
     public static void eor_zero_page_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_ZERO_PAGE_X, "EOR");
+            Debug.printASM(EOR_ZERO_PAGE_X, "EOR 3");
     }
     public static void eor_absolute() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_ABSOLUTE, "EOR");
+            Debug.printASM(EOR_ABSOLUTE, "EOR 4");
     }
     public static void eor_absolute_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_ABSOLUTE_X, "EOR");
+            Debug.printASM(EOR_ABSOLUTE_X, "EOR 5");
     }
     public static void eor_absolute_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_ABSOLUTE_Y, "EOR");
+            Debug.printASM(EOR_ABSOLUTE_Y, "EOR 6");
     }
     public static void eor_indexed_indirect() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_INDEXED_INDIRECT, "EOR");
+            Debug.printASM(EOR_INDEXED_INDIRECT, "EOR 7");
     }
     public static void eor_indirect_indexed() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_INDIRECT_INDEXED, "EOR");
+            Debug.printASM(EOR_INDIRECT_INDEXED, "EOR 8");
     }
 
 
@@ -643,6 +652,18 @@ public class Instructions {
             Debug.printASM(INC, "INC 1");
     }
     public static void inc_zero_page_x() {
+        
+        short address = (short)(Registers.pc & 0xFF);
+        Registers.pc++;
+        address = (short)((address + Registers.x) & 0xFF);
+
+        byte value = Ram.read(address);
+        value =(byte)( (value + 1) & 0xFF);
+
+        Ram.write(address, value);
+        Registers.setZeroFlag(value == 0);
+        Registers.setNegativeFlag((value & Registers.NEGATIVE_MASK) != 0);
+
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ZERO_PAGE_X, "INC 2");
     }
@@ -910,12 +931,13 @@ public class Instructions {
             Debug.printASM(ORA_ABSOLUTE_X, "ORA");
     }
 
-
     public static void ora_absolute_y() {
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_ABSOLUTE_Y, "ORA5");
     }
     public static void ora_indexed_indirect() {
+        
+
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_INDEXED_INDIRECT, "ORA6");
     }
@@ -1456,7 +1478,22 @@ public class Instructions {
             Debug.printASM(SLO_ABSOLUTE_Y, "SLO5");
     }
     
+    /**
+     * ASL + ORA
+     */
     public static void slo_indexed_indirect() {
+
+        short address = fetchAddress();
+        address += Registers.x;
+
+        byte value = Ram.read(address);
+        Registers.setCarryFlag((value & Registers.CARRY_MASK) != 0);
+        value <<= 1;
+        Registers.acc = (byte) (Registers.acc | value);
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.NEGATIVE_MASK) != 0);
+        
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_INDEXED_INDIRECT, "SLO6");
     }
@@ -1491,19 +1528,25 @@ public class Instructions {
             Debug.printASM(LAX_ABSOLUTE_Y, "LAX");
     }
     
+    /**
+     *  ACC and X
+     */
     public static void sax_zero_page() {
+        short address = (short)(fetchAddress() & 0xFF);
+        byte value = (byte) (Registers.acc & Registers.x);
+        Ram.write(address, value);
         if (ArgsHandler.debug)
-            Debug.printASM(SAX_ZERO_PAGE, "SAX");
+            Debug.printASM(SAX_ZERO_PAGE, "SAX 1");
     }
     
     public static void sax_absolute() {
         if (ArgsHandler.debug)
-            Debug.printASM(SAX_ABSOLUTE, "SAX");
+            Debug.printASM(SAX_ABSOLUTE, "SAX 2");
     }
     
     public static void sax_zero_page_y() {
         if (ArgsHandler.debug)
-            Debug.printASM(SAX_ZERO_PAGE_Y, "SAX");
+            Debug.printASM(SAX_ZERO_PAGE_Y, "SAX 3");
     }
     public static void sbc_immediate() {
         if (ArgsHandler.debug)
@@ -1512,7 +1555,7 @@ public class Instructions {
     
     public static void ahx_absolute_y() {
         if (ArgsHandler.debug)
-            Debug.printASM(AHX_ABSOLUTE_Y, "AHX");
+            Debug.printASM(AHX_ABSOLUTE_Y, "AHX ");
     }
     
     public static void ahx_indirect_y() {
