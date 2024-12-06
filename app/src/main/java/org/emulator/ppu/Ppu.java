@@ -15,7 +15,7 @@ public class Ppu extends JPanel {
 
     public Ppu() {}
 
-
+    
 
 
 
