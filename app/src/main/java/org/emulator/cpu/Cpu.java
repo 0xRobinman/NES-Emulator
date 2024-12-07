@@ -284,6 +284,8 @@ public class Cpu {
         opcodeToInstruction.put(Instructions.KIL_IMPLICIT_42, Instructions::kil_implicit_42);
         opcodeToInstruction.put(Instructions.KIL_IMPLICIT_92, Instructions::kil_implicit_92);
         
+        opcodeToInstruction.put(Instructions.XAA_IMMEDIATE, Instructions::xaa_immediate);
+
     }
 
 

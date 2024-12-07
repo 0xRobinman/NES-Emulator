@@ -206,6 +206,9 @@ public class Instructions {
     public static final byte SBC_IMMEDIATE = (byte) 0xEB;
     public static final byte SHY_ABSOLUTE_X = (byte) 0x9C;
     public static final byte SHX_ABSOLUTE_Y = (byte) 0x9E;
+    public static final byte XAA_IMMEDIATE = (byte) 0x8B;
+
+    
 
     /**
      * ADD operation with carry
@@ -302,8 +305,12 @@ public class Instructions {
 
         short address = fetchAddress();
         byte value = Ram.read(address);
+        Registers.setCarryFlag((value & Registers.NEGATIVE_MASK) != 0);
         value <<= 1;
         Ram.write(address, value);
+
+        Registers.setZeroFlag(value == 0);
+        Registers.setNegativeFlag((value & Registers.NEGATIVE_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(ASL_ABSOLUTE, "ASL 4");
@@ -345,27 +352,11 @@ public class Instructions {
 
         byte testValue = Ram.read(address);
 
-        // Set Zero Flag to 0 if test & acc = 0
-        if ((testValue & Registers.acc) == 0) {
-            Registers.status |= Registers.ZERO_MASK;
-        } else {
-            Registers.status &= ~Registers.ZERO_MASK;
-        }
+        Registers.setZeroFlag((testValue & Registers.acc) == 0);
+        Registers.setNegativeFlag((testValue & Registers.NEGATIVE_MASK) != 0);
+        Registers.setOverflowFlag((testValue & Registers.OVERFLOW_MASK) != 0);
 
-        // Set N flag based on the 7th bit of the value
-        if ((testValue & Registers.NEGATIVE_MASK) != 0) {
-            Registers.status |= Registers.NEGATIVE_MASK;
-        } else {
-            Registers.status &= ~Registers.NEGATIVE_MASK;
-        }
 
-        // Set overflow flag based on the 6th bit of the value
-        if ((testValue & Registers.OVERFLOW_MASK) != 0) {
-            Registers.status |= Registers.OVERFLOW_MASK;
-        } else {
-            Registers.status &= ~Registers.OVERFLOW_MASK;
-        }
-        
         if (ArgsHandler.debug) 
             Debug.printASM(BIT_ABSOLUTE, "BIT a");
     }
@@ -414,17 +405,20 @@ public class Instructions {
         byte higherByte =  (byte) ((returnAddress >> 8));
         byte lowerByte = (byte) (returnAddress);
         
+        byte status = Registers.status;
+        status |= Registers.UNUSED_MASK;
+        status |= Registers.BREAK_MASK;
+
         // Store the return address of next instruction onto the stack
         Ram.writeToStack(Registers.sp, lowerByte);
         Registers.sp--;
         Ram.writeToStack(Registers.sp, higherByte);
         Registers.sp--;
+        Ram.writeToStack(Registers.sp, status);
+        Registers.sp--;
         
         // Set interrupt flag
         sei();
-
-        // Set break flag
-        Registers.status |= Registers.BREAK_MASK;
 
         // Get interrupt vector 
         lowerByte = Ram.read((short)0xFFFE);
@@ -451,7 +445,7 @@ public class Instructions {
      */
     public static void clc() {
 
-        Registers.status &= ~Registers.CARRY_MASK;
+        Registers.setCarryFlag(false);
 
         if (ArgsHandler.debug) 
             Debug.printASM(CLC, "CLC");
@@ -462,7 +456,7 @@ public class Instructions {
      */
     public static void cld() {
 
-        Registers.status &= ~Registers.DECIMAL_MASK;
+        Registers.setDecimalFlag(false);
 
         if (ArgsHandler.debug) 
             Debug.printASM(CLD, "CLD");
@@ -473,7 +467,7 @@ public class Instructions {
      */
     public static void cli() {
 
-        Registers.status &= ~Registers.INTERRUPT_MASK;
+        Registers.setInterruptFlag(false);
 
         if (ArgsHandler.debug) 
             Debug.printASM(CLI, "CLI");
@@ -484,7 +478,7 @@ public class Instructions {
      */
     public static void clv() {
 
-        Registers.status &= ~Registers.OVERFLOW_MASK;
+        Registers.setOverflowFlag(false);
 
         if (ArgsHandler.debug) 
             Debug.printASM(CLV, "CLV");
@@ -598,13 +592,13 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(EOR, "EOR 1");
     }
-    public static void eor_zero_page() {        
-        short address = (short) (fetchAddress() & 0xFF);
-
+    public static void eor_zero_page() {       
+        byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
-
         Registers.acc ^= value;
 
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_ZERO_PAGE, "EOR 2");
@@ -644,25 +638,26 @@ public class Instructions {
 
         // Read and increment value in memory
         byte value = Ram.read(address);
-        value++;
+        value = (byte)((value + 1) & 0xFF);
+
         Ram.write(address, value);
 
+        Registers.setZeroFlag(value == 0);
+        Registers.setNegativeFlag((value & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INC, "INC 1");
     }
     public static void inc_zero_page_x() {
         
-        short address = (short)(Registers.pc & 0xFF);
-        Registers.pc++;
-        address = (short)((address + Registers.x) & 0xFF);
+        byte address = fetchZeroPageXAddress();
 
         byte value = Ram.read(address);
-        value =(byte)( (value + 1) & 0xFF);
+        value = (byte)((value + 1) & 0xFF);
 
         Ram.write(address, value);
         Registers.setZeroFlag(value == 0);
-        Registers.setNegativeFlag((value & Registers.NEGATIVE_MASK) != 0);
+        Registers.setNegativeFlag((value & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ZERO_PAGE_X, "INC 2");
@@ -679,8 +674,11 @@ public class Instructions {
         
         // Read and increment value in memory
         byte value = Ram.read(address);
-        value++;
+        value = (byte)((value + 1) & 0xFF);
         Ram.write(address, value);
+
+        Registers.setZeroFlag(value == 0);
+        Registers.setNegativeFlag((value & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ABSOLUTE_X, "INC 4");
@@ -691,18 +689,10 @@ public class Instructions {
      */
     public static void inx() {
 
-        Registers.x++;
+        Registers.x = (byte)((Registers.x + 1) & 0xFF);
 
-        if (Registers.x == 0x00)
-            Registers.status |= 0x00000010; // Set Zero flag to 0
-        else
-            Registers.status &= 0x11111101; // Set Zero flag to 0
-
-        if ((Registers.x & 0x80) != 0x00)
-            Registers.status |= 0x10000000; // Set N Register
-        else
-            Registers.status &= 0x01111111; // Clear N Register
-
+        Registers.setZeroFlag(Registers.x == 0);
+        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INX, "INX");
@@ -710,9 +700,16 @@ public class Instructions {
 
 
     public static void iny() {
+        Registers.y = (byte)((Registers.y + 1) & 0xFF);
+
+        Registers.setZeroFlag(Registers.y == 0);
+        Registers.setNegativeFlag((Registers.y & Registers.OVERFLOW_MASK) != 0);
+
         if (ArgsHandler.debug) 
             Debug.printASM(INY, "INY");
     }
+
+
     public static void jmp() {
         if (ArgsHandler.debug) 
             Debug.printASM(JMP, "JMP");
@@ -730,7 +727,7 @@ public class Instructions {
         short address = fetchAddress();
         
         // Get the subroutine address to jump to.
-        short returnAddress = (short) (Registers.pc - 2);
+        short returnAddress = (short) (Registers.pc+1);
         
         // Push return address for routine on the stack
         byte higherByte =  (byte) ((returnAddress >> 8));
@@ -765,7 +762,7 @@ public class Instructions {
     public static void lda_zero_page() {
 
         // Convert them to little endian
-        short address = fetchAddress();
+        byte address = fetchZeroPageAddress();
 
         // Fetch the value from memory 
         byte value = Ram.read(address);     
@@ -773,6 +770,9 @@ public class Instructions {
         // Set accumulator value
         Registers.acc = value;
 
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        
         if (ArgsHandler.debug) 
             Debug.printASM(address, address, "LDA", "$");
     }
@@ -809,6 +809,9 @@ public class Instructions {
         Registers.pc++;
         Registers.x = Cpu.fetchNextValue();
         
+        Registers.setZeroFlag(Registers.x == 0);
+        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
+
         if (ArgsHandler.debug) 
             Debug.printASM(LDX, Registers.x, "LDX", "#");
 
@@ -915,17 +918,9 @@ public class Instructions {
 
         Registers.acc |= value;
 
-        if (Registers.acc == 0) {
-            Registers.status |= Registers.ZERO_MASK;
-        } else {
-            Registers.status &= ~Registers.ZERO_MASK;
-        }
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
 
-        if ((Registers.acc & Registers.NEGATIVE_MASK) != 0) {
-            Registers.status |= Registers.NEGATIVE_MASK;
-        } else {
-            Registers.status &= ~Registers.NEGATIVE_MASK;
-        }
 
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_ABSOLUTE_X, "ORA");
@@ -936,7 +931,7 @@ public class Instructions {
             Debug.printASM(ORA_ABSOLUTE_Y, "ORA5");
     }
     public static void ora_indexed_indirect() {
-        
+
 
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_INDEXED_INDIRECT, "ORA6");
@@ -968,6 +963,7 @@ public class Instructions {
      * Bit 5 of the status register stays the same
      */
     public static void plp() {
+        
         
         byte statusRegister = Ram.read((short) (0x0100 + (++Registers.sp)));
 
@@ -1093,12 +1089,15 @@ public class Instructions {
     
     public static void sre_zero_page() {
 
-        short address = (short) (fetchAddress() & 0xFF);
+        byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
         Registers.status &= (value & Registers.CARRY_MASK);
+        Registers.setCarryFlag((value & 0x01) != 0);
         value >>>= 1;
         Ram.write(address, value);
         Registers.acc ^= value;
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ZERO_PAGE, "SRE 2");
     }
@@ -1140,7 +1139,7 @@ public class Instructions {
      */
     public static void sed() {
 
-        Registers.status |= Registers.DECIMAL_MASK;
+        Registers.setDecimalFlag(true);
 
         if (ArgsHandler.debug) 
             Debug.printASM(SED, "SED");
@@ -1151,7 +1150,7 @@ public class Instructions {
      */
     public static void sei() {
         
-        Registers.status |= Registers.INTERRUPT_MASK;
+        Registers.setInterruptFlag(true);
 
         if (ArgsHandler.debug)
             Debug.printASM(SEI, "SEI");
@@ -1234,17 +1233,10 @@ public class Instructions {
     public static void tax() {
 
         Registers.x = Registers.acc;
-    
-        if (Registers.x == 0x00)
-            Registers.status |= 0x00000010; // Set Zero flag to 1
-        else
-            Registers.status &= 0x11111101; // Set Zero flag to 0
-
-        if ((Registers.x & 0x80) != 0x00)
-            Registers.status |= 0x10000000; // Set N Register
-        else
-            Registers.status &= 0x01111111; // Clear N Register
         
+        Registers.setZeroFlag(Registers.x==0);
+        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
+
         if (ArgsHandler.debug) 
             Debug.printASM(TAX, "TAX");
     }
@@ -1255,15 +1247,9 @@ public class Instructions {
     public static void tay() {
         Registers.y = Registers.acc;
 
-        if (Registers.y == 0x00)
-            Registers.status |= 0x00000010; // Set Zero flag to 1
-        else
-            Registers.status &= 0x11111101; // Set Zero flag to 0
+        Registers.setZeroFlag(Registers.y==0);
+        Registers.setNegativeFlag((Registers.y & Registers.OVERFLOW_MASK) != 0);
 
-        if ((Registers.y & 0x80) != 0x00)
-            Registers.status |= 0x10000000; // Set N Register
-        else
-            Registers.status &= 0x01111111; // Clear N Register
         if (ArgsHandler.debug) 
             Debug.printASM(TAY, "TAY");
     }
@@ -1273,7 +1259,11 @@ public class Instructions {
      */
     public static void tsx() {
 
-        Registers.sp = Registers.x;
+        Registers.x = Registers.sp;
+
+        Registers.setZeroFlag(Registers.x == 0);
+        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
+
         if (ArgsHandler.debug) 
             Debug.printASM(TSX, "TSX");
     }
@@ -1284,16 +1274,9 @@ public class Instructions {
     public static void txa() {
 
         Registers.acc = Registers.x;
-    
-        if (Registers.acc == 0x00)
-            Registers.status |= 0x00000010; // Set Zero flag to 1
-        else
-            Registers.status &= 0x11111101; // Set Zero flag to 0
-
-        if ((Registers.x & 0x80) != 0x00)
-            Registers.status |= 0x10000000; // Set N Register
-        else
-            Registers.status &= 0x01111111; // Clear N Register
+        
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(TXA, "TXA");
@@ -1306,16 +1289,6 @@ public class Instructions {
 
         Registers.sp = Registers.x;
 
-        if (Registers.x == 0x00)
-            Registers.status |= 0x00000010; // Set Zero flag to 1
-        else
-            Registers.status &= 0x11111101; // Set Zero flag to 0
-
-        if ((Registers.x & 0x80) != 0x00)
-            Registers.status |= 0x10000000; // Set N Register
-        else
-            Registers.status &= 0x01111111; // Clear N Register
-
         if (ArgsHandler.debug) 
             Debug.printASM(TXS, "TXS");
     }
@@ -1327,15 +1300,8 @@ public class Instructions {
 
         Registers.acc = Registers.y;
 
-        if (Registers.acc == 0x00)
-            Registers.status |= 0x00000010; // Set Zero flag to 1
-        else
-            Registers.status &= 0x11111101; // Set Zero flag to 0
-
-        if ((Registers.acc & 0x80) != 0x00)
-            Registers.status |= 0x10000000; // Set N Register
-        else
-            Registers.status &= 0x01111111; // Clear N Register
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(TYA, "TYA");
@@ -1417,12 +1383,11 @@ public class Instructions {
      */
     public static void slo_zero_page() {
         // Get the address parts zero page wrap around
-        short address = fetchAddress();
-                
-        address &= (short)(0xFF);
-
+        byte address = fetchZeroPageAddress();
+    
         // Get value at address
         byte value = Ram.read(address);
+        Registers.setCarryFlag((value & Registers.OVERFLOW_MASK) != 0);
 
         // Perform ASL on value
         value <<= 1;
@@ -1431,6 +1396,9 @@ public class Instructions {
         Registers.acc |= value;
 
         Ram.write(address, value);
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ZERO_PAGE, "SLO1");
@@ -1438,13 +1406,11 @@ public class Instructions {
 
     public static void slo_zero_page_x() {
         // Get the address parts zero page wrap around
-        short address = fetchAddress();
+        byte address = fetchZeroPageXAddress();
         
-        address = (short) ( (address + Registers.x) & 0xFF);
-
         // Get value at address
         byte value = Ram.read(address);
-
+        Registers.setCarryFlag((value & Registers.OVERFLOW_MASK) != 0);
 
         // Perform ASL on value
         value <<= 1;
@@ -1453,7 +1419,9 @@ public class Instructions {
         Registers.acc |= value;
 
         Ram.write(address, value);
-
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+    
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ZERO_PAGE_X, "SLO2");
     }
@@ -1492,7 +1460,7 @@ public class Instructions {
         Registers.acc = (byte) (Registers.acc | value);
 
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.NEGATIVE_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
         
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_INDEXED_INDIRECT, "SLO6");
@@ -1532,7 +1500,7 @@ public class Instructions {
      *  ACC and X
      */
     public static void sax_zero_page() {
-        short address = (short)(fetchAddress() & 0xFF);
+        byte address = fetchZeroPageAddress();
         byte value = (byte) (Registers.acc & Registers.x);
         Ram.write(address, value);
         if (ArgsHandler.debug)
@@ -1600,6 +1568,30 @@ public class Instructions {
     public static void kil_implicit_92() {
         if (ArgsHandler.debug)
             Debug.printASM(KIL_IMPLICIT_92, "KIL");
+    }
+
+    public static void xaa_immediate() {
+        Registers.pc++;
+        byte value = Cpu.fetchNextValue();
+
+        Registers.acc = (byte) ((Registers.acc & Registers.x) & value);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        if (ArgsHandler.debug)
+            Debug.printASM(XAA_IMMEDIATE, "XAA");
+    }
+
+    private static byte fetchZeroPageAddress() {
+          // Get the address
+          Registers.pc++;
+          byte address = (byte) (Cpu.fetchNextValue() & 0xFF);  
+          return address;    
+    }
+
+    private static byte fetchZeroPageXAddress() {
+        byte zero_page_address = fetchZeroPageAddress();
+        zero_page_address = (byte)((zero_page_address + Registers.x) & 0xFF);
+        return zero_page_address;    
     }
 
     private static short fetchAddress() {
