@@ -1,10 +1,15 @@
 # NES Emulator 
+Status: incomplete, working version by Christmas. 
 
 
 
-
-# Download
-
+# Download and run
+``` bash
+git clone https://github.com/0xRobinman/NES-Emulator
+cd NES-Emulator
+gradle build;
+gradle run
+```
 
 
 

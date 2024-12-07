@@ -7,8 +7,16 @@ public class Ram {
         return memory[address & 0xFFFF];
     }
 
+    public static byte read(byte address) {
+        return memory[address & 0xFF];
+    }
+
     public static void write(short address, byte value) {
         memory[address & 0xFFFF] = value;
+    }
+
+    public static void write(byte address, byte value) {
+        memory[address & 0xFF] = value;
     }
 
     public static void write(short address, byte[] values) {
