@@ -268,37 +268,99 @@ public class Instructions {
 
 
     public static void and() {
+        Registers.pc++;
+        byte value = Cpu.fetchNextValue();
+        
+        Registers.acc &= value;
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+    
         if (ArgsHandler.debug) 
-            Debug.printASM(AND, "AND");
+            Debug.printASM(AND, "AND 1");
     }
 
     public static void and_zero_page() {
+        byte address = fetchZeroPageAddress();
+        byte value = Ram.read(address);
+        
+        Registers.acc &= value;
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+    
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_ZERO_PAGE, "AND");
+            Debug.printASM(AND_ZERO_PAGE, "AND 2");
     }
     public static void and_zero_page_x() {
+        byte address = fetchZeroPageXAddress();
+        byte value = Ram.read(address);
+        
+        Registers.acc &= value;
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_ZERO_PAGE_X, "AND");
+            Debug.printASM(AND_ZERO_PAGE_X, "AND 3");
     }
     public static void and_absolute() {
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+        
+        Registers.acc &= value;
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_ABSOLUTE, "AND");
+            Debug.printASM(AND_ABSOLUTE, "AND 4");
     }
     public static void and_absolute_x() {
+        short address = fetchAbsoluteXAddress();
+        byte value = Ram.read(address);
+        
+        Registers.acc &= value;
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_ABSOLUTE_X, "AND");
+            Debug.printASM(AND_ABSOLUTE_X, "AND 5");
     }
     public static void and_absolute_y() {
+        short address = fetchAbsoluteYAddress();
+        byte value = Ram.read(address);
+        
+        Registers.acc &= value;
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_ABSOLUTE_Y, "AND");
+            Debug.printASM(AND_ABSOLUTE_Y, "AND 6");
     }
     public static void and_x_ind() {
+            short address = fetchXindAddress();
+            byte value = Ram.read(address);
+            Registers.acc &= value;
+
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_X_IND, "AND");
+            Debug.printASM(AND_X_IND, "AND 7");
     }
     public static void and_ind_y() {
+ 
+        short address = fetchIndYAddress();
+        byte value = Ram.read(address);
+        Registers.acc &= value;
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_IND_Y, "AND");
+            Debug.printASM(AND_IND_Y, "AND 8");
     }
 
     
@@ -349,6 +411,13 @@ public class Instructions {
             Debug.printASM(BCS_RELATIVE, "BCS");
     }
     public static void beq() {
+        if ((Registers.status & Registers.ZERO_MASK) == 1) {
+            Registers.pc++;
+            byte offset = Cpu.fetchNextValue();
+            Registers.pc++;
+            Registers.pc += offset;
+            Registers.pc--;
+        }         
         if (ArgsHandler.debug) 
             Debug.printASM(BEQ_RELATIVE, "BEQ");
     }
@@ -370,17 +439,30 @@ public class Instructions {
         short address = fetchAddress();
 
         byte testValue = Ram.read(address);
+        System.out.printf("Memory Read: Address = $%04X%n", address);
 
         Registers.setZeroFlag((testValue & Registers.acc) == 0);
-        Registers.setNegativeFlag((testValue & Registers.NEGATIVE_MASK) != 0);
-        Registers.setOverflowFlag((testValue & Registers.OVERFLOW_MASK) != 0);
-
+        Registers.setNegativeFlag((testValue & 0x80) != 0);
+        Registers.setOverflowFlag((testValue & 0x40) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(BIT_ABSOLUTE, "BIT a");
     }
 
+    /**
+     * Branch if minus
+     */
     public static void bmi() {
+
+        if ((Registers.status & Registers.NEGATIVE_MASK) != 0) {
+            Registers.pc++;
+            byte offset = Cpu.fetchNextValue();
+            Registers.pc++;
+            System.out.println("Branching");
+            Registers.pc += offset;
+            Registers.pc--;
+        }
+        
         if (ArgsHandler.debug) 
             Debug.printASM(BMI_RELATIVE, "BMI");
     }
@@ -389,6 +471,15 @@ public class Instructions {
      * Branch not equals
      */
     public static void bne() {
+
+        if ((Registers.status & Registers.ZERO_MASK) == 0) {
+            Registers.pc++;
+            byte offset = Cpu.fetchNextValue();
+            Registers.pc++;
+            Registers.pc += offset;
+            Registers.pc--;
+        } 
+
         if (ArgsHandler.debug) 
             Debug.printASM(BNE_RELATIVE, "BNE");
     }
@@ -402,7 +493,7 @@ public class Instructions {
 
         // Branch by the relative address.
         if ((Registers.status & Registers.NEGATIVE_MASK) == 0) {
-            System.out.println("Branching.");
+            Registers.pc++;
             Registers.pc += relativeAddress;
             Registers.pc--;
         }
@@ -417,12 +508,18 @@ public class Instructions {
      */
     public static void brk() {
         
+        Registers.pc++;
+        /*
+        Ignoring for time being
         // Return to BRK + 2 but + 1 since opcode ( next instruction )
         short returnAddress = (short) (Registers.pc + 2);
         
         // Push return address for routine on the stack
         byte higherByte =  (byte) ((returnAddress >> 8));
         byte lowerByte = (byte) (returnAddress);
+        
+        // Set interrupt flag
+        sei();
         
         byte status = Registers.status;
         status |= Registers.UNUSED_MASK;
@@ -435,9 +532,6 @@ public class Instructions {
         Registers.sp--;
         Ram.writeToStack(Registers.sp, status);
         Registers.sp--;
-        
-        // Set interrupt flag
-        sei();
 
         // Get interrupt vector 
         lowerByte = Ram.read((short)0xFFFE);
@@ -446,6 +540,10 @@ public class Instructions {
         // Set PC to new address (little endian)
         Registers.pc = (short)((higherByte << 8) | lowerByte);
         Registers.pc--;
+
+        // Clear interrupt flag
+        Registers.setInterruptFlag(false);
+        */
 
         if (ArgsHandler.debug) 
             Debug.printASM(BRK_IMPLIED, "BRK");
@@ -505,43 +603,72 @@ public class Instructions {
     }
     
     /**
-     * 
+     *  Compare
      */
     public static void cmp() {
 
-        Registers.status &= ~Registers.OVERFLOW_MASK;
+        Registers.pc++;
+        byte value = Cpu.fetchNextValue();
+        byte result = (byte) (Registers.acc - value);
+
+        Registers.setCarryFlag(Registers.acc >= value);
+        Registers.setZeroFlag(Registers.acc == value);
+        Registers.setNegativeFlag((result & 0x80) !=0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(CMP, "CMP");
     }
 
     public static void cmp_zero_page() {
+        byte address = fetchZeroPageAddress();
+        byte value = Ram.read(address);
+        byte result = (byte) (Registers.acc - value);
+        Registers.setCarryFlag(Registers.acc >= value);
+        Registers.setZeroFlag(Registers.acc == value);
+        Registers.setNegativeFlag((result & 0x80) !=0);     
+
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_ZERO_PAGE, "CMP");
+            Debug.printASM(CMP_ZERO_PAGE, "CMP 2");
     }
     public static void cmp_zero_page_x() {
+            byte address = fetchZeroPageXAddress();
+            byte value = Ram.read(address);
+            byte result = (byte) (Registers.acc - value);
+            Registers.setCarryFlag(Registers.acc >= value);
+            Registers.setZeroFlag(Registers.acc == value);
+            Registers.setNegativeFlag((result & 0x80) !=0);     
+
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_ZERO_PAGE_X, "CMP");
+            Debug.printASM(CMP_ZERO_PAGE_X, "CMP 3");
     }
     public static void cmp_absolute() {
+
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+        byte result = (byte) (Registers.acc - value);
+        Registers.setCarryFlag(Registers.acc >= value);
+        Registers.setZeroFlag(Registers.acc == value);
+        Registers.setNegativeFlag((result & 0x80) !=0);
+        System.out.println(String.format("Address: 0x%04X", address));
+
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_ABSOLUTE, "CMP");
+            Debug.printASM(CMP_ABSOLUTE, "CMP 4");
     }
     public static void cmp_absolute_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_ABSOLUTE_X, "CMP");
+            Debug.printASM(CMP_ABSOLUTE_X, "CMP 5");
     }
     public static void cmp_absolute_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_ABSOLUTE_Y, "CMP");
+            Debug.printASM(CMP_ABSOLUTE_Y, "CMP 6");
     }
     public static void cmp_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_X_IND, "CMP");
+            Debug.printASM(CMP_X_IND, "CMP 7");
     }
     public static void cmp_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_IND_Y, "CMP");
+            Debug.printASM(CMP_IND_Y, "CMP 8");
     }
 
     public static void cpx() {
@@ -611,9 +738,8 @@ public class Instructions {
         byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
         Registers.acc ^= value;
-
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_ZERO_PAGE, "EOR 2");
@@ -658,7 +784,7 @@ public class Instructions {
         Ram.write(address, value);
 
         Registers.setZeroFlag(value == 0);
-        Registers.setNegativeFlag((value & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((value & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ZERO_PAGE, "INC 1");
@@ -672,7 +798,7 @@ public class Instructions {
 
         Ram.write(address, value);
         Registers.setZeroFlag(value == 0);
-        Registers.setNegativeFlag((value & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((value & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ZERO_PAGE_X, "INC 2");
@@ -693,7 +819,7 @@ public class Instructions {
         Ram.write(address, value);
 
         Registers.setZeroFlag(value == 0);
-        Registers.setNegativeFlag((value & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((value & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ABSOLUTE_X, "INC 4");
@@ -707,7 +833,7 @@ public class Instructions {
         Registers.x = (byte)((Registers.x + 1) & 0xFF);
 
         Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INX_IMPLIED, "INX");
@@ -718,7 +844,7 @@ public class Instructions {
         Registers.y = (byte)((Registers.y + 1) & 0xFF);
 
         Registers.setZeroFlag(Registers.y == 0);
-        Registers.setNegativeFlag((Registers.y & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.y & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(INY_IMPLIED, "INY");
@@ -786,7 +912,7 @@ public class Instructions {
         Registers.acc = value;
 
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
         
         if (ArgsHandler.debug) 
             Debug.printASM(address, address, "LDA", "$");
@@ -825,7 +951,7 @@ public class Instructions {
         Registers.x = Cpu.fetchNextValue();
         
         Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(LDX, Registers.x, "LDX", "#");
@@ -934,7 +1060,7 @@ public class Instructions {
         Registers.acc |= value;
 
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
 
         if (ArgsHandler.debug) 
@@ -991,23 +1117,23 @@ public class Instructions {
 
     public static void rol() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ROL, "ROL");
+            Debug.printASM(ROL, "ROL 1");
     }
     public static void rol_zero_page() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ROL_ZERO_PAGE, "ROL");
+            Debug.printASM(ROL_ZERO_PAGE, "ROL 2");
     }
     public static void rol_zero_page_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ROL_ZERO_PAGE_X, "ROL");
+            Debug.printASM(ROL_ZERO_PAGE_X, "ROL 3");
     }
     public static void rol_absolute() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ROL_ABSOLUTE, "ROL");
+            Debug.printASM(ROL_ABSOLUTE, "ROL 4");
     }
     public static void rol_absolute_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ROL_ABSOLUTE_X, "ROL");
+            Debug.printASM(ROL_ABSOLUTE_X, "ROL 5");
     }
 
 
@@ -1031,7 +1157,26 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(ROR_ABSOLUTE_X, "ROR");
     }
+
+    /**
+     * Return from interrupt
+     */
     public static void rti() {
+
+        // Fetch address off the stack
+        Registers.sp++;
+        byte status = Ram.popFromStack(Registers.sp);
+        Registers.status = status;
+        Registers.sp++;
+        byte higherByte = Ram.popFromStack(Registers.sp);
+        Registers.sp++;
+        byte lowerByte = Ram.popFromStack(Registers.sp);
+        short address = (short) ((higherByte << 8) | (lowerByte & 0xFF));
+
+        // Return to previous address
+        Registers.pc = address; 
+        Registers.pc--;
+
         if (ArgsHandler.debug) 
             Debug.printASM(RTI_IMPLIED, "RTI");
     }
@@ -1060,37 +1205,130 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(RTS_IMPLIED, "RTS");
     }
+    /**
+     * Two's compliment subtraction
+     */
     public static void sbc() {
+        Registers.pc++;
+        byte value = Cpu.fetchNextValue();
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte)((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte)(~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
+
         if (ArgsHandler.debug) 
             Debug.printASM(SBC, "SBC");
     }
     public static void sbc_zero_page() {
+        byte address = fetchZeroPageAddress();
+        byte value = Ram.read(address);
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte)((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte)(~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
+
+
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_ZERO_PAGE, "SBC");
+            Debug.printASM(SBC_ZERO_PAGE, "SBC 1");
     }
     public static void sbc_zero_page_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_ZERO_PAGE_X, "SBC");
+            Debug.printASM(SBC_ZERO_PAGE_X, "SBC 2");
     }
     public static void sbc_absolute() {
+
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte)((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte)(~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
+
+
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_ABSOLUTE, "SBC");
+            Debug.printASM(SBC_ABSOLUTE, "SBC 3");
     }
     public static void sbc_absolute_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_ABSOLUTE_X, "SBC");
+            Debug.printASM(SBC_ABSOLUTE_X, "SBC 4");
     }
     public static void sbc_absolute_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_ABSOLUTE_Y, "SBC");
+            Debug.printASM(SBC_ABSOLUTE_Y, "SBC 5");
     }
     public static void sbc_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_X_IND, "SBC");
+            Debug.printASM(SBC_X_IND, "SBC 6");
     }
     public static void sbc_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_IND_Y, "SBC");
+            Debug.printASM(SBC_IND_Y, "SBC 7");
     }
     
 
@@ -1112,7 +1350,7 @@ public class Instructions {
         Ram.write(address, value);
         Registers.acc ^= value;
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ZERO_PAGE, "SRE 2");
     }
@@ -1143,8 +1381,13 @@ public class Instructions {
     }
     
 
-
+    /**
+     * Set carry flag
+     */
     public static void sec() {
+
+        Registers.setCarryFlag(true);
+
         if (ArgsHandler.debug) 
             Debug.printASM(SEC_IMPLIED, "SEC");
     }  
@@ -1172,33 +1415,45 @@ public class Instructions {
         
     }
 
+    /**
+     * 
+     */
     public static void sta_zero_page() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_ZERO_PAGE, "STA");
+            Debug.printASM(STA_ZERO_PAGE, "STA 1");
     }
     public static void sta_zero_page_x() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_ZERO_PAGE_X, "STA");
+            Debug.printASM(STA_ZERO_PAGE_X, "STA 2");
     }
     public static void sta_absolute() {
+        short address = fetchAddress();
+        Ram.write(address, Registers.acc);     
+        System.out.printf("STA: Stored value 0x%02X at address 0x%04X%n", Registers.acc, address);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_ABSOLUTE, "STA");
+            Debug.printASM(STA_ABSOLUTE, "STA 3");
     }
+
     public static void sta_absolute_x() {
+        short address = fetchAbsoluteXAddress();
+        Ram.write(address, Registers.acc);        
+        System.out.printf("STA: Stored value 0x%02X at address 0x%04X%n", Registers.acc, address);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_ABSOLUTE_X, "STA");
+            Debug.printASM(STA_ABSOLUTE_X, "STA 4");
     }
     public static void sta_absolute_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_ABSOLUTE_Y, "STA");
+            Debug.printASM(STA_ABSOLUTE_Y, "STA 5");
     }
     public static void sta_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_X_IND, "STA");
+            Debug.printASM(STA_X_IND, "STA 6");
     }
     public static void sta_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_IND_Y, "STA");
+            Debug.printASM(STA_IND_Y, "STA 7");
     }
 
     /**
@@ -1250,7 +1505,7 @@ public class Instructions {
         Registers.x = Registers.acc;
         
         Registers.setZeroFlag(Registers.x==0);
-        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(TAX_IMPLIED, "TAX");
@@ -1263,7 +1518,7 @@ public class Instructions {
         Registers.y = Registers.acc;
 
         Registers.setZeroFlag(Registers.y==0);
-        Registers.setNegativeFlag((Registers.y & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.y & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(TAY_IMPLIED, "TAY");
@@ -1277,7 +1532,7 @@ public class Instructions {
         Registers.x = Registers.sp;
 
         Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(TSX_IMPLIED, "TSX");
@@ -1291,7 +1546,7 @@ public class Instructions {
         Registers.acc = Registers.x;
         
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(TXA_IMPLIED, "TXA");
@@ -1316,44 +1571,160 @@ public class Instructions {
         Registers.acc = Registers.y;
 
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(TYA_IMPLIED, "TYA");
     }
+
+    /**
+     * 
+     */
     public static void rla_zero_page() {
+        byte address = fetchZeroPageAddress();
+        byte value = Ram.read(address);
+
+        // Rotate value
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        value = (byte)(((value << 1) | carry) & 0xFF);
+        
+        // Store value
+        Ram.write(address, value);
+        
+        Registers.acc &= value;
+        
+        Registers.setCarryFlag((value & 0x80) != 0);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_ZERO_PAGE, "RLA");
+            Debug.printASM(RLA_ZERO_PAGE, "RLA 1 ");
     }
     
     public static void rla_zero_page_x() {
+        byte address = fetchZeroPageXAddress();
+        byte value = Ram.read(address);
+
+        // Rotate value
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        value = (byte)(((value << 1) | carry) & 0xFF);
+        
+        // Store value
+        Ram.write(address, value);
+        
+        Registers.acc &= value;
+        
+        Registers.setCarryFlag((value & 0x80) != 0);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_ZERO_PAGE_X, "RLA");
+            Debug.printASM(RLA_ZERO_PAGE_X, "RLA 2");
     }
     
     public static void rla_absolute() {
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+
+        // Rotate value
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        value = (byte)(((value << 1) | carry) & 0xFF);
+        
+        // Store value
+        Ram.write(address, value);
+        
+        Registers.acc &= value;
+        
+        Registers.setCarryFlag((value & 0x80) != 0);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_ABSOLUTE, "RLA");
+            Debug.printASM(RLA_ABSOLUTE, "RLA 3");
     }
     
     public static void rla_absolute_x() {
+        short address = fetchAbsoluteXAddress();
+        byte value = Ram.read(address);
+
+        // Rotate value
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        value = (byte)(((value << 1) | carry) & 0xFF);
+        
+        // Store value
+        Ram.write(address, value);
+        
+        Registers.acc &= value;
+        
+        Registers.setCarryFlag((value & 0x80) != 0);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_ABSOLUTE_X, "RLA");
+            Debug.printASM(RLA_ABSOLUTE_X, "RLA 4");
     }
     
     public static void rla_absolute_y() {
+        short address = fetchAbsoluteYAddress();
+        byte value = Ram.read(address);
+
+        // Rotate value
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        value = (byte)(((value << 1) | carry) & 0xFF);
+        
+        // Store value
+        Ram.write(address, value);
+        
+        Registers.acc &= value;
+        
+        Registers.setCarryFlag((value & 0x80) != 0);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_ABSOLUTE_Y, "RLA");
+            Debug.printASM(RLA_ABSOLUTE_Y, "RLA 5");
     }
     
     public static void rla_x_ind() {
+        short address = fetchXindAddress();
+        byte value = Ram.read(address);
+
+        // Rotate value
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        value = (byte)(((value << 1) | carry) & 0xFF);
+        
+        // Store value
+        Ram.write(address, value);
+        
+        Registers.acc &= value;
+        
+        Registers.setCarryFlag((value & 0x80) != 0);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_X_IND, "RLA");
+            Debug.printASM(RLA_X_IND, "RLA 6");
     }
     
     public static void rla_ind_y() {
+        short address = fetchIndYAddress();
+        byte value = Ram.read(address);
+
+        // Rotate value
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        value = (byte)(((value << 1) | carry) & 0xFF);
+        
+        // Store value
+        Ram.write(address, value);
+        
+        Registers.acc &= value;
+        
+        Registers.setCarryFlag((value & 0x80) != 0);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_IND_Y, "RLA");
+            Debug.printASM(RLA_IND_Y, "RLA 7");
     }
     
     public static void rra_x_ind() {
@@ -1402,7 +1773,7 @@ public class Instructions {
     
         // Get value at address
         byte value = Ram.read(address);
-        Registers.setCarryFlag((value & Registers.OVERFLOW_MASK) != 0);
+        Registers.setCarryFlag((value & 0x80) != 0);
 
         // Perform ASL on value
         value <<= 1;
@@ -1413,7 +1784,7 @@ public class Instructions {
         Ram.write(address, value);
 
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ZERO_PAGE, "SLO1");
@@ -1425,7 +1796,7 @@ public class Instructions {
         
         // Get value at address
         byte value = Ram.read(address);
-        Registers.setCarryFlag((value & Registers.OVERFLOW_MASK) != 0);
+        Registers.setCarryFlag((value & 0x80) != 0);
 
         // Perform ASL on value
         value <<= 1;
@@ -1435,7 +1806,7 @@ public class Instructions {
 
         Ram.write(address, value);
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
     
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ZERO_PAGE_X, "SLO2");
@@ -1475,7 +1846,7 @@ public class Instructions {
         Registers.acc = (byte) (Registers.acc | value);
 
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
         
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_X_IND, "SLO6");
@@ -1584,10 +1955,9 @@ public class Instructions {
     public static void xaa_immediate() {
         Registers.pc++;
         byte value = Cpu.fetchNextValue();
-
         Registers.acc = (byte) ((Registers.acc & Registers.x) & value);
         Registers.setZeroFlag(Registers.acc == 0);
-        Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
         if (ArgsHandler.debug)
             Debug.printASM(ANE, "XAA");
     }
@@ -1672,8 +2042,35 @@ public class Instructions {
     }
 
 
+    private static short fetchIndYAddress() {
+        byte address = fetchZeroPageAddress();
+        address = (byte)((address + Registers.y) & 0xFF);
+        // Fetch the address
+        byte lowerByte = Ram.read(address);
+        byte higherByte = Ram.read((byte)((address+1) & 0xFF));
+        short return_address = (short) ((higherByte << 8) | (lowerByte & 0xFF));
+        return return_address;
+    }
 
-
+    private static short fetchXindAddress() {
+        byte address = fetchZeroPageAddress();
+        address = (byte)((address + Registers.x) & 0xFF);
+        // Fetch the address
+        byte lowerByte = Ram.read(address);
+        byte higherByte = Ram.read((byte)((address+1) & 0xFF));
+        short return_address = (short) ((higherByte << 8) | (lowerByte & 0xFF));
+        return return_address;
+    }
+    private static short fetchAbsoluteYAddress() {
+        short address = fetchAddress();
+        address += Registers.y;
+        return address;
+    }
+    private static short fetchAbsoluteXAddress() {
+        short address = fetchAddress();
+        address += Registers.x;
+        return address;
+    }
 
     private static byte fetchZeroPageAddress() {
           // Get the address

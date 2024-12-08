@@ -7,14 +7,15 @@ public class Registers {
     public static byte status;
     public static byte sp = (byte)0xFF;
     public static short pc;
-    public static final int CARRY_MASK =        0x00000001;
-    public static final int ZERO_MASK =         0x00000010;
-    public static final int INTERRUPT_MASK =    0x00000100;
-    public static final int DECIMAL_MASK =      0x00001000;
-    public static final int BREAK_MASK =        0x00010000;
-    public static final int UNUSED_MASK =       0x00100000;
-    public static final int OVERFLOW_MASK =     0x01000000;
-    public static final int NEGATIVE_MASK =     0x10000000;
+    public static final byte CARRY_MASK =        0x01;
+    public static final byte ZERO_MASK =         0x02;
+    public static final byte INTERRUPT_MASK =    0x04;
+    public static final byte DECIMAL_MASK =      0x08;
+    public static final byte BREAK_MASK =        0x10;
+    public static final byte UNUSED_MASK =       0x20;
+    public static final byte OVERFLOW_MASK =     0x40;
+    public static final byte NEGATIVE_MASK =     (byte) 0x80;
+    
     public static void setCarryFlag(boolean carry) {
         if (carry) 
             status |= CARRY_MASK;

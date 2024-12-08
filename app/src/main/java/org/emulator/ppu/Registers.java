@@ -4,16 +4,28 @@ import org.emulator.memory.Ram;
 
 public class Registers {
 
-    private final short CONTROL_ADDRESS = 0x2000;
+    private final static short CONTROL_ADDRESS = 0x2000;
     private final short MASK_ADDRESS = 0x2001;
-    private final short STATUS_ADDRESS = 0x2002;
-    private final short OAM_ADDRESS_ADDRESS = 0x2003;
+    private final static short STATUS_ADDRESS = 0x2002;
+    private final static byte VBLANK_MASK = (byte)0x80;
+    private final static short OAM_ADDRESS_ADDRESS = 0x2003;
     private final short OAM_DATA_ADDRESS = 0x2004;
     private final short SCROLL_ADDRESS = 0x2005;
     private final short VRAM_ADDRESS_ADDRESS = 0x2006;
     private final short VRAM_DATA_ADDRESS = 0x2007; 
 
-    public byte getControlRegister()
+    
+    public static void setVBlank(boolean vblank) {
+        byte status = Ram.read(STATUS_ADDRESS);
+        if (vblank) 
+            status |= VBLANK_MASK;
+        else 
+            status &= ~VBLANK_MASK;
+
+        Ram.write(STATUS_ADDRESS, status);
+    }
+
+    public static byte getControlRegister()
     {
         return Ram.read(CONTROL_ADDRESS);   
     }
@@ -38,12 +50,12 @@ public class Registers {
         return Ram.read(STATUS_ADDRESS);
     }
 
-    public void setStatusRegister(byte value) 
+    public static void setStatusRegister(byte value) 
     {
         Ram.write(STATUS_ADDRESS, value);
     }
 
-    public byte getOAMAddressRegister() 
+    public static byte getOAMAddressRegister() 
     {
         return Ram.read(OAM_ADDRESS_ADDRESS);
     }
