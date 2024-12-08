@@ -16,7 +16,7 @@ public class Ppu extends JPanel {
     private static final int SPRITE_START = 256;
     private static final int SPRITE_END = 240;
     private static final int VBLANK_START = 241;
-    private static final int VBLANK_END = 260;
+    private static final int VBLANK_END = 262;
     private static final int SCREEN_HEIGHT = 240; // NES resolution height
     private static final int SCREEN_WIDTH = 256;
 
@@ -38,7 +38,7 @@ public class Ppu extends JPanel {
     private void handlePreRenderLine() {
 
     }
-
+    
     private void handleVBlank() {
 
     }
@@ -53,14 +53,8 @@ public class Ppu extends JPanel {
         handlePreRenderLine();
     }
 
-    private void ppuCycle() {
-        for (int i = 0; i < CYCLES; i++)
-            ppuTick();
-    }
-
-
     private int fetchSpritePixel(int x, int y) {
-
+        
         return 0;
     }
 
@@ -76,7 +70,7 @@ public class Ppu extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(frameBuffer, 0, 0, getWidth(), getHeight(), null);
-        ppuCycle();
+        ppuTick();
     }
 
 

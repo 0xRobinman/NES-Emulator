@@ -1,6 +1,7 @@
 package org.emulator.cpu;
 
 import java.util.HashMap;
+import java.util.concurrent.Callable;
 
 import org.emulator.debug.Debug;
 import org.emulator.memory.Ram;
@@ -10,8 +11,7 @@ import org.emulator.memory.Ram;
  */
 public class Cpu {
 
-    private final HashMap<Byte, Runnable> opcodeToInstruction = new HashMap<>();
-
+    private final HashMap<Byte, Callable<Integer>> opcodeToInstruction = new HashMap<>();
     public Cpu()
     {
         opcodeToInstruction.put(Instructions.BRK_IMPLIED, Instructions::brk);
@@ -272,22 +272,28 @@ public class Cpu {
         opcodeToInstruction.put((byte) 0x2B, Instructions::anc);
     }
 
+    /**
+     * PPU will call this upon entering V-Blank
+     */
+    public static void NmiInterrupt() {
+        
+    }
 
     /**
      * Read the current opcode, execute instruction.
      */
-    private void executeInstruction(byte opcode) {
+    private int executeInstruction(byte opcode) {
+        int clockCycles = 0;
         try {
-            Runnable instruction = opcodeToInstruction.get(opcode);
-            instruction.run();
+            Callable<Integer> instruction = opcodeToInstruction.get(opcode);
+            clockCycles = instruction.call();
 
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             Debug.printDebug("Invalid opcode (" + String.format("0x%02X", opcode & 0xFF) + ")", false);
             System.exit(0);
         }
-
+        return clockCycles;
     }
-
 
     public static byte fetchNextValue() {
         return  Ram.read(Registers.pc);
@@ -302,9 +308,14 @@ public class Cpu {
         Registers.pc = (short) ((resetVector[1] & 0xFF) << 8 | (resetVector[0] & 0xFF));
     }
 
-    public void executeCycle() {
-        executeInstruction(fetchNextValue());
+
+    public int executeCycle() {
+
+        int clockCycles = executeInstruction(fetchNextValue());
+
         Registers.pc++;
+
+        return clockCycles;
     }
 
 }
