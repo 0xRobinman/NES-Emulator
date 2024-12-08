@@ -10,6 +10,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
+import org.emulator.apu.Apu;
 import org.emulator.arg.ArgsHandler;
 import org.emulator.cpu.Cpu;
 import org.emulator.debug.Debug;
@@ -19,8 +20,9 @@ import org.emulator.ppu.Ppu;
 
 public class Emulator {
 
+    private final static long FRAME_TIME = 1000 / 60;
     private boolean verbose = false;
-    
+
     public Emulator() {}
     
     public Emulator(ArgsHandler argsHandler) {
@@ -147,6 +149,20 @@ public class Emulator {
         }
     }
 
+    private void synchroniseTiming(long startTime, long endTime) {
+
+        long timeElapsed = endTime - startTime;
+    
+        if (timeElapsed < FRAME_TIME) { 
+            long restOfFrameTime = FRAME_TIME - timeElapsed;
+            try {
+                Thread.sleep(restOfFrameTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void startEmulator() {
         File inputFile;
         if ((inputFile = getInputFile()) == null) 
@@ -165,11 +181,21 @@ public class Emulator {
         window.add(ppu);
         window.setVisible(true);
 
+        // Create new audio processing unit
+        Apu apu = new Apu();
         
-        // Start CPU.
+        // Start Emulator
         while(true) {
-            cpu.executeCycle();
-            ppu.repaint();
+            long startTime = System.currentTimeMillis();
+            int clockCycles = cpu.executeCycle();
+            for (int i = 0; i < clockCycles * 3; i++)
+                ppu.repaint();
+            
+            for (int i = 0; i < clockCycles; i++)
+                apu.tick();
+            
+            long endTime = System.currentTimeMillis();
+            synchroniseTiming(startTime, endTime);
         }
     }
 

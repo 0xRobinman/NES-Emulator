@@ -63,9 +63,7 @@ public class Memory {
     public static byte readNameTableMemory(byte offset) {
         return Ram.read((byte)(NAME_TABLE_0_START + offset));
     }
-
-
-
+    
     public static byte[] getOAM() {
         byte [] oam = new byte[OAM_SIZE];
         byte oamAddress = Registers.getOAMAddressRegister();

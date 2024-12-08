@@ -5,24 +5,42 @@ import org.emulator.memory.Ram;
 public class Registers {
 
     private final static short CONTROL_ADDRESS = 0x2000;
-    private final short MASK_ADDRESS = 0x2001;
+    private final static short MASK_ADDRESS = 0x2001;
     private final static short STATUS_ADDRESS = 0x2002;
-    private final static byte VBLANK_MASK = (byte)0x80;
     private final static short OAM_ADDRESS_ADDRESS = 0x2003;
-    private final short OAM_DATA_ADDRESS = 0x2004;
-    private final short SCROLL_ADDRESS = 0x2005;
-    private final short VRAM_ADDRESS_ADDRESS = 0x2006;
-    private final short VRAM_DATA_ADDRESS = 0x2007; 
+    private final static short OAM_DATA_ADDRESS = 0x2004;
+    private final static short SCROLL_ADDRESS = 0x2005;
+    private final static short VRAM_ADDRESS_ADDRESS = 0x2006;
+    private final static short VRAM_DATA_ADDRESS = 0x2007; 
+    private final static short OAM_DMA_ADDRESS = 0x4014;
 
+    private final static byte V_BLANK_MASK = (byte)0x80;
     
-    public static void setVBlank(boolean vblank) {
+    public static void setVBlank(boolean vBlank) {
         byte status = Ram.read(STATUS_ADDRESS);
-        if (vblank) 
-            status |= VBLANK_MASK;
+        if (vBlank) 
+            status |= V_BLANK_MASK;
         else 
-            status &= ~VBLANK_MASK;
+            status &= ~V_BLANK_MASK;
 
         Ram.write(STATUS_ADDRESS, status);
+    }
+
+
+    /**
+     * Set all registers to 0x00
+     */
+    public static void reset() 
+    {
+        setControlRegister((byte)0x00);
+        setMaskRegister((byte)0x00);
+        setStatusRegister((byte)0x00);
+        setOAMAddressRegister((byte)0x00);
+        setOAMDataRegister((byte)0x00);
+        setScrollRegister((byte)0x00);
+        setVRAMAddressRegister((byte)0x00);
+        setVRAMDataRegister((byte)0x00);
+        setOAM_DMARegister((byte)0x00);
     }
 
     public static byte getControlRegister()
@@ -30,22 +48,22 @@ public class Registers {
         return Ram.read(CONTROL_ADDRESS);   
     }
 
-    public void setControlRegister(byte value)
+    public static void setControlRegister(byte value)
     {
         Ram.write(CONTROL_ADDRESS, value);   
     }
 
-    public byte getMaskRegister() 
+    public static byte getMaskRegister() 
     {
         return Ram.read(MASK_ADDRESS);
     }
     
-    public void setMaskRegister(byte value) 
+    public static void setMaskRegister(byte value) 
     {
         Ram.write(MASK_ADDRESS, value);
     }
 
-    public byte getStatusRegister() 
+    public static byte getStatusRegister() 
     {
         return Ram.read(STATUS_ADDRESS);
     }
@@ -60,64 +78,57 @@ public class Registers {
         return Ram.read(OAM_ADDRESS_ADDRESS);
     }
 
-    public void setOAMAddressRegister(byte value) 
+    public static void setOAMAddressRegister(byte value) 
     {
         Ram.write(OAM_ADDRESS_ADDRESS, value);
     }
 
-    public byte getOAMDataRegister() 
+    public static byte getOAMDataRegister() 
     {
         return Ram.read(OAM_DATA_ADDRESS);
     }
 
-    public void setOAMDataRegister(byte value) 
+    public static void setOAMDataRegister(byte value) 
     {
         Ram.write(OAM_DATA_ADDRESS, value);
     }
 
-    public byte getScrollRegister() 
+    public static byte getScrollRegister() 
     {
         return Ram.read(SCROLL_ADDRESS);
     }
 
-    public void setScrollRegister(byte value) 
+    public static void setScrollRegister(byte value) 
     {
         Ram.write(SCROLL_ADDRESS, value);
     }
 
-    public byte getVRAMAddressRegister() 
+    public static byte getVRAMAddressRegister() 
     {
         return Ram.read(VRAM_ADDRESS_ADDRESS);
     }
 
-    public void setVRAMAddressRegister(byte value) 
+    public static void setVRAMAddressRegister(byte value) 
     {
         Ram.write(VRAM_ADDRESS_ADDRESS, value);
     }
 
-    public byte getVRAMDataRegister() 
+    public static byte getVRAMDataRegister() 
     {
         return Ram.read(VRAM_DATA_ADDRESS);
     }
 
-    public void setVRAMDataRegister(byte value) 
+    public static void setVRAMDataRegister(byte value) 
     {
         Ram.write(VRAM_DATA_ADDRESS, value);
     }
 
-
-    /**
-     * Set all registers to 0x00
-     */
-    public void reset() 
+    public static void setOAM_DMARegister(byte value) 
     {
-        Ram.write(CONTROL_ADDRESS, (byte) 0x00);
-        Ram.write(MASK_ADDRESS, (byte) 0x00);
-        Ram.write(STATUS_ADDRESS, (byte) 0x00);
-        Ram.write(OAM_ADDRESS_ADDRESS, (byte) 0x00);
-        Ram.write(OAM_DATA_ADDRESS, (byte) 0x00);
-        Ram.write(SCROLL_ADDRESS, (byte) 0x00);
-        Ram.write(VRAM_ADDRESS_ADDRESS, (byte) 0x00);
-        Ram.write(VRAM_DATA_ADDRESS, (byte) 0x00);
+        Ram.write(OAM_DMA_ADDRESS, value);
     }
+
+
+
+
 }
