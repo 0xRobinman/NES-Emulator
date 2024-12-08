@@ -6,209 +6,228 @@ import org.emulator.memory.Ram;
 
 public class Instructions {
     
-    public static final byte ADC = (byte) 0x69;
-    public static final byte ADC_ZERO_PAGE = (byte) 0x65;
-    public static final byte ADC_ZERO_PAGE_X = (byte) 0x75;
-    public static final byte ADC_ABSOLUTE = (byte) 0x6D;
-    public static final byte ADC_ABSOLUTE_X = (byte) 0x7D;
-    public static final byte ADC_ABSOLUTE_Y = (byte) 0x79;
-    public static final byte ADC_INDEXED_INDIRECT = (byte) 0x61;
-    public static final byte ADC_INDIRECT_INDEXED = (byte) 0x71;
-    public static final byte AHX_ABSOLUTE_Y = (byte) 0x9F;
-    public static final byte AHX_INDIRECT_Y = (byte) 0x93;
-    public static final byte AND = (byte) 0x29;
-    public static final byte AND_ZERO_PAGE = (byte) 0x25;
-    public static final byte AND_ZERO_PAGE_X = (byte) 0x35;
-    public static final byte AND_ABSOLUTE = (byte) 0x2D;
-    public static final byte AND_ABSOLUTE_X = (byte) 0x3D;
-    public static final byte AND_ABSOLUTE_Y = (byte) 0x39;
-    public static final byte AND_INDEXED_INDIRECT = (byte) 0x21;
-    public static final byte AND_INDIRECT_INDEXED = (byte) 0x31;
-    public static final byte ASL = (byte) 0x0A;
-    public static final byte ASL_ZERO_PAGE = (byte) 0x06;
-    public static final byte ASL_ZERO_PAGE_X = (byte) 0x16;
-    public static final byte ASL_ABSOLUTE = (byte) 0x0E;
-    public static final byte ASL_ABSOLUTE_X = (byte) 0x1E;
-    public static final byte BCC = (byte) 0x90;
-    public static final byte BCS = (byte) 0xB0;
-    public static final byte BEQ = (byte) 0xF0;
-    public static final byte BIT = (byte) 0x24;
+    public static final byte BRK_IMPLIED = (byte) 0x00;
+    public static final byte NOP_ZERO_PAGE = (byte) 0x04;
+    public static final byte PHP_IMPLIED = (byte) 0x08;
+    public static final byte NOP_ABSOLUTE = (byte) 0x0C;
+    public static final byte BPL_RELATIVE = (byte) 0x10;
+    public static final byte NOP_ZERO_PAGE_X = (byte) 0x14;
+    public static final byte CLC_IMPLIED = (byte) 0x18;
+    public static final byte NOP_ABSOLUTE_X = (byte) 0x1C;
+    public static final byte JSR_ABSOLUTE = (byte) 0x20;
+    public static final byte BIT_ZERO_PAGE = (byte) 0x24;
+    public static final byte PLP_IMPLIED = (byte) 0x28;
     public static final byte BIT_ABSOLUTE = (byte) 0x2C;
-    public static final byte BMI = (byte) 0x30;
-    public static final byte BNE = (byte) 0xD0;
-    public static final byte BPL = (byte) 0x10;
-    public static final byte BRK = (byte) 0x00;
-    public static final byte BVC = (byte) 0x50;
-    public static final byte BVS = (byte) 0x70;
-    public static final byte CLC = (byte) 0x18;
-    public static final byte CLD = (byte) 0xD8;
-    public static final byte CLI = (byte) 0x58;
-    public static final byte CLV = (byte) 0xB8;
-    public static final byte CMP = (byte) 0xC9;
-    public static final byte CMP_ZERO_PAGE = (byte) 0xC5;
-    public static final byte CMP_ZERO_PAGE_X = (byte) 0xD5;
-    public static final byte CMP_ABSOLUTE = (byte) 0xCD;
-    public static final byte CMP_ABSOLUTE_X = (byte) 0xDD;
-    public static final byte CMP_ABSOLUTE_Y = (byte) 0xD9;
-    public static final byte CMP_INDEXED_INDIRECT = (byte) 0xC1;
-    public static final byte CMP_INDIRECT_INDEXED = (byte) 0xD1;
-    public static final byte CPX = (byte) 0xE0;
-    public static final byte CPX_ZERO_PAGE = (byte) 0xE4;
-    public static final byte CPX_ABSOLUTE = (byte) 0xEC;
-    public static final byte CPY = (byte) 0xC0;
-    public static final byte CPY_ZERO_PAGE = (byte) 0xC4;
-    public static final byte CPY_ABSOLUTE = (byte) 0xCC;
-    public static final byte DEC = (byte) 0xC6;
-    public static final byte DEC_ZERO_PAGE_X = (byte) 0xD6;
-    public static final byte DEC_ABSOLUTE = (byte) 0xCE;
-    public static final byte DEC_ABSOLUTE_X = (byte) 0xDE;
-    public static final byte DEX = (byte) 0xCA;
-    public static final byte DEY = (byte) 0x88;
-    public static final byte EOR = (byte) 0x49;
-    public static final byte EOR_ZERO_PAGE = (byte) 0x45;
-    public static final byte EOR_ZERO_PAGE_X = (byte) 0x55;
-    public static final byte EOR_ABSOLUTE = (byte) 0x4D;
-    public static final byte EOR_ABSOLUTE_X = (byte) 0x5D;
-    public static final byte EOR_ABSOLUTE_Y = (byte) 0x59;
-    public static final byte EOR_INDEXED_INDIRECT = (byte) 0x41;
-    public static final byte EOR_INDIRECT_INDEXED = (byte) 0x51;
-    public static final byte INC = (byte) 0xE6;
-    public static final byte INC_ZERO_PAGE_X = (byte) 0xF6;
-    public static final byte INC_ABSOLUTE = (byte) 0xEE;
-    public static final byte INC_ABSOLUTE_X = (byte) 0xFE;
-    public static final byte INX = (byte) 0xE8;
-    public static final byte INY = (byte) 0xC8;
-    public static final byte JMP = (byte) 0x4C;
-    public static final byte JMP_INDIRECT = (byte) 0x6C;
-    public static final byte JSR = (byte) 0x20;
-    public static final byte KIL_IMPLICIT_02 = (byte) 0x02;
-    public static final byte KIL_IMPLICIT_12 = (byte) 0x12;
-    public static final byte KIL_IMPLICIT_22 = (byte) 0x22;
-    public static final byte KIL_IMPLICIT_32 = (byte) 0x32;
-    public static final byte KIL_IMPLICIT_42 = (byte) 0x42;
-    public static final byte KIL_IMPLICIT_92 = (byte) 0x92;
-    public static final byte LAX_ZERO_PAGE = (byte) 0xA7;
-    public static final byte LAX_ABSOLUTE = (byte) 0xAF;
-    public static final byte LAX_INDIRECT_Y = (byte) 0xB3;
-    public static final byte LAX_ZERO_PAGE_Y = (byte) 0xB7;
-    public static final byte LAX_ABSOLUTE_Y = (byte) 0xBF;
-    public static final byte LDA = (byte) 0xA9;
-    public static final byte LDA_ZERO_PAGE = (byte) 0xA5;
-    public static final byte LDA_ZERO_PAGE_X = (byte) 0xB5;
-    public static final byte LDA_ABSOLUTE = (byte) 0xAD;
-    public static final byte LDA_ABSOLUTE_X = (byte) 0xBD;
-    public static final byte LDA_ABSOLUTE_Y = (byte) 0xB9;
-    public static final byte LDA_INDEXED_INDIRECT = (byte) 0xA1;
-    public static final byte LDA_INDIRECT_INDEXED = (byte) 0xB1;
-    public static final byte LDX = (byte) 0xA2;
-    public static final byte LDX_ZERO_PAGE = (byte) 0xA6;
-    public static final byte LDX_ZERO_PAGE_Y = (byte) 0xB6;
-    public static final byte LDX_ABSOLUTE = (byte) 0xAE;
-    public static final byte LDX_ABSOLUTE_Y = (byte) 0xBE;
+    public static final byte BMI_RELATIVE = (byte) 0x30;
+    public static final byte SEC_IMPLIED = (byte) 0x38;
+    public static final byte RTI_IMPLIED = (byte) 0x40;
+    public static final byte PHA_IMPLIED = (byte) 0x48;
+    public static final byte JMP_ABSOLUTE = (byte) 0x4C;
+    public static final byte BVC_RELATIVE = (byte) 0x50;
+    public static final byte CLI_IMPLIED = (byte) 0x58;
+    public static final byte RTS_IMPLIED = (byte) 0x60;
+    public static final byte PLA_IMPLIED = (byte) 0x68;
+    public static final byte JMP_IND = (byte) 0x6C;
+    public static final byte BVS_RELATIVE = (byte) 0x70;
+    public static final byte SEI_IMPLIED = (byte) 0x78;
+    public static final byte NOP = (byte) 0x80;
+    public static final byte STY_ZERO_PAGE = (byte) 0x84;
+    public static final byte DEY_IMPLIED = (byte) 0x88;
+    public static final byte STY_ABSOLUTE = (byte) 0x8C;
+    public static final byte BCC_RELATIVE = (byte) 0x90;
+    public static final byte STY_ZERO_PAGE_X = (byte) 0x94;
+    public static final byte TYA_IMPLIED = (byte) 0x98;
+    public static final byte SHY_ABSOLUTE_X = (byte) 0x9C;
     public static final byte LDY = (byte) 0xA0;
     public static final byte LDY_ZERO_PAGE = (byte) 0xA4;
-    public static final byte LDY_ZERO_PAGE_X = (byte) 0xB4;
+    public static final byte TAY_IMPLIED = (byte) 0xA8;
     public static final byte LDY_ABSOLUTE = (byte) 0xAC;
+    public static final byte BCS_RELATIVE = (byte) 0xB0;
+    public static final byte LDY_ZERO_PAGE_X = (byte) 0xB4;
+    public static final byte CLV_IMPLIED = (byte) 0xB8;
     public static final byte LDY_ABSOLUTE_X = (byte) 0xBC;
-    public static final byte LSR = (byte) 0x4A;
-    public static final byte LSR_ZERO_PAGE = (byte) 0x46;
-    public static final byte LSR_ZERO_PAGE_X = (byte) 0x56;
-    public static final byte LSR_ABSOLUTE = (byte) 0x4E;
-    public static final byte LSR_ABSOLUTE_X = (byte) 0x5E;
-    public static final byte NOP = (byte) 0xEA;
-    public static final byte ORA = (byte) 0x09;
+    public static final byte CPY = (byte) 0xC0;
+    public static final byte CPY_ZERO_PAGE = (byte) 0xC4;
+    public static final byte INY_IMPLIED = (byte) 0xC8;
+    public static final byte CPY_ABSOLUTE = (byte) 0xCC;
+    public static final byte BNE_RELATIVE = (byte) 0xD0;
+    public static final byte CLD_IMPLIED = (byte) 0xD8;
+    public static final byte CPX = (byte) 0xE0;
+    public static final byte CPX_ZERO_PAGE = (byte) 0xE4;
+    public static final byte INX_IMPLIED = (byte) 0xE8;
+    public static final byte CPX_ABSOLUTE = (byte) 0xEC;
+    public static final byte BEQ_RELATIVE = (byte) 0xF0;
+    public static final byte SED_IMPLIED = (byte) 0xF8;
+    public static final byte ORA_X_IND = (byte) 0x01;
     public static final byte ORA_ZERO_PAGE = (byte) 0x05;
-    public static final byte ORA_ZERO_PAGE_X = (byte) 0x15;
+    public static final byte ORA = (byte) 0x09;
     public static final byte ORA_ABSOLUTE = (byte) 0x0D;
-    public static final byte ORA_ABSOLUTE_X = (byte) 0x1D;
+    public static final byte ORA_IND_Y = (byte) 0x11;
+    public static final byte ORA_ZERO_PAGE_X = (byte) 0x15;
     public static final byte ORA_ABSOLUTE_Y = (byte) 0x19;
-    public static final byte ORA_INDEXED_INDIRECT = (byte) 0x01;
-    public static final byte ORA_INDIRECT_INDEXED = (byte) 0x11;
-    public static final byte PHA = (byte) 0x48;
-    public static final byte PHP = (byte) 0x08;
-    public static final byte PLA = (byte) 0x68;
-    public static final byte PLP = (byte) 0x28;
-    public static final byte PADDING = (byte) 0xFF;
-    public static final byte PADDING_ZERO = (byte) 0x00;
-    public static final byte RLA_ZERO_PAGE = (byte) 0x27;
-    public static final byte RLA_ZERO_PAGE_X = (byte) 0x37;
-    public static final byte RLA_ABSOLUTE = (byte) 0x2F;
-    public static final byte RLA_ABSOLUTE_X = (byte) 0x3F;
-    public static final byte RLA_ABSOLUTE_Y = (byte) 0x3B;
-    public static final byte RLA_INDEXED_INDIRECT = (byte) 0x23;
-    public static final byte RLA_INDIRECT_INDEXED = (byte) 0x33;
-    public static final byte ROL = (byte) 0x2A;
-    public static final byte ROL_ZERO_PAGE = (byte) 0x26;
-    public static final byte ROL_ZERO_PAGE_X = (byte) 0x36;
-    public static final byte ROL_ABSOLUTE = (byte) 0x2E;
-    public static final byte ROL_ABSOLUTE_X = (byte) 0x3E;
-    public static final byte ROR = (byte) 0x6A;
-    public static final byte ROR_ZERO_PAGE = (byte) 0x66;
-    public static final byte ROR_ZERO_PAGE_X = (byte) 0x76;
-    public static final byte ROR_ABSOLUTE = (byte) 0x6E;
-    public static final byte ROR_ABSOLUTE_X = (byte) 0x7E;
-    public static final byte RRA_INDIRECT_X = (byte) 0x63;
-    public static final byte RRA_ZERO_PAGE = (byte) 0x67;
-    public static final byte RRA_ABSOLUTE = (byte) 0x6F;
-    public static final byte RRA_INDIRECT_Y = (byte) 0x73;
-    public static final byte RRA_ZERO_PAGE_X = (byte) 0x77;
-    public static final byte RRA_ABSOLUTE_Y = (byte) 0x7B;
-    public static final byte RRA_ABSOLUTE_X = (byte) 0x7F;
-    public static final byte RTI = (byte) 0x40;
-    public static final byte RTS = (byte) 0x60;
-    public static final byte SAX_ZERO_PAGE = (byte) 0x87;
-    public static final byte SAX_ABSOLUTE = (byte) 0x8F;
-    public static final byte SAX_ZERO_PAGE_Y = (byte) 0x97;
-    public static final byte SBC = (byte) 0xE9;
-    public static final byte SBC_ZERO_PAGE = (byte) 0xE5;
-    public static final byte SBC_ZERO_PAGE_X = (byte) 0xF5;
-    public static final byte SBC_ABSOLUTE = (byte) 0xED;
-    public static final byte SBC_ABSOLUTE_X = (byte) 0xFD;
-    public static final byte SBC_ABSOLUTE_Y = (byte) 0xF9;
-    public static final byte SBC_INDEXED_INDIRECT = (byte) 0xE1;
-    public static final byte SBC_INDIRECT_INDEXED = (byte) 0xF1;
-    public static final byte SEC = (byte) 0x38;
-    public static final byte SED = (byte) 0xF8;
-    public static final byte SEI = (byte) 0x78;
-    public static final byte SLO_ZERO_PAGE = (byte) 0x07;
-    public static final byte SLO_ZERO_PAGE_X = (byte) 0x17;
-    public static final byte SLO_ABSOLUTE = (byte) 0x0F;
-    public static final byte SLO_ABSOLUTE_X = (byte) 0x1F;
-    public static final byte SLO_ABSOLUTE_Y = (byte) 0x1B;
-    public static final byte SLO_INDEXED_INDIRECT = (byte) 0x03;
-    public static final byte SLO_INDIRECT_INDEXED = (byte) 0x13;
-    public static final byte STA = (byte) 0x85;
-    public static final byte STA_ZERO_PAGE_X = (byte) 0x95;
+    public static final byte ORA_ABSOLUTE_X = (byte) 0x1D;
+    public static final byte AND_X_IND = (byte) 0x21;
+    public static final byte AND_ZERO_PAGE = (byte) 0x25;
+    public static final byte AND = (byte) 0x29;
+    public static final byte AND_ABSOLUTE = (byte) 0x2D;
+    public static final byte AND_IND_Y = (byte) 0x31;
+    public static final byte AND_ZERO_PAGE_X = (byte) 0x35;
+    public static final byte AND_ABSOLUTE_Y = (byte) 0x39;
+    public static final byte AND_ABSOLUTE_X = (byte) 0x3D;
+    public static final byte EOR_X_IND = (byte) 0x41;
+    public static final byte EOR_ZERO_PAGE = (byte) 0x45;
+    public static final byte EOR = (byte) 0x49;
+    public static final byte EOR_ABSOLUTE = (byte) 0x4D;
+    public static final byte EOR_IND_Y = (byte) 0x51;
+    public static final byte EOR_ZERO_PAGE_X = (byte) 0x55;
+    public static final byte EOR_ABSOLUTE_Y = (byte) 0x59;
+    public static final byte EOR_ABSOLUTE_X = (byte) 0x5D;
+    public static final byte ADC_X_IND = (byte) 0x61;
+    public static final byte ADC_ZERO_PAGE = (byte) 0x65;
+    public static final byte ADC = (byte) 0x69;
+    public static final byte ADC_ABSOLUTE = (byte) 0x6D;
+    public static final byte ADC_IND_Y = (byte) 0x71;
+    public static final byte ADC_ZERO_PAGE_X = (byte) 0x75;
+    public static final byte ADC_ABSOLUTE_Y = (byte) 0x79;
+    public static final byte ADC_ABSOLUTE_X = (byte) 0x7D;
+    public static final byte STA_X_IND = (byte) 0x81;
+    public static final byte STA_ZERO_PAGE = (byte) 0x85;
     public static final byte STA_ABSOLUTE = (byte) 0x8D;
-    public static final byte STA_ABSOLUTE_X = (byte) 0x9D;
+    public static final byte STA_IND_Y = (byte) 0x91;
+    public static final byte STA_ZERO_PAGE_X = (byte) 0x95;
     public static final byte STA_ABSOLUTE_Y = (byte) 0x99;
-    public static final byte STA_INDEXED_INDIRECT = (byte) 0x81;
-    public static final byte STA_INDIRECT_INDEXED = (byte) 0x91;
-    public static final byte SRE_INDIRECT_X = (byte) 0x43;
+    public static final byte STA_ABSOLUTE_X = (byte) 0x9D;
+    public static final byte LDA_X_IND = (byte) 0xA1;
+    public static final byte LDA_ZERO_PAGE = (byte) 0xA5;
+    public static final byte LDA = (byte) 0xA9;
+    public static final byte LDA_ABSOLUTE = (byte) 0xAD;
+    public static final byte LDA_IND_Y = (byte) 0xB1;
+    public static final byte LDA_ZERO_PAGE_X = (byte) 0xB5;
+    public static final byte LDA_ABSOLUTE_Y = (byte) 0xB9;
+    public static final byte LDA_ABSOLUTE_X = (byte) 0xBD;
+    public static final byte CMP_X_IND = (byte) 0xC1;
+    public static final byte CMP_ZERO_PAGE = (byte) 0xC5;
+    public static final byte CMP = (byte) 0xC9;
+    public static final byte CMP_ABSOLUTE = (byte) 0xCD;
+    public static final byte CMP_IND_Y = (byte) 0xD1;
+    public static final byte CMP_ZERO_PAGE_X = (byte) 0xD5;
+    public static final byte CMP_ABSOLUTE_Y = (byte) 0xD9;
+    public static final byte CMP_ABSOLUTE_X = (byte) 0xDD;
+    public static final byte SBC_X_IND = (byte) 0xE1;
+    public static final byte SBC_ZERO_PAGE = (byte) 0xE5;
+    public static final byte SBC = (byte) 0xE9;
+    public static final byte SBC_ABSOLUTE = (byte) 0xED;
+    public static final byte SBC_IND_Y = (byte) 0xF1;
+    public static final byte SBC_ZERO_PAGE_X = (byte) 0xF5;
+    public static final byte SBC_ABSOLUTE_Y = (byte) 0xF9;
+    public static final byte SBC_ABSOLUTE_X = (byte) 0xFD;
+    public static final byte JAM = (byte) 0x02;
+    public static final byte ASL_ZERO_PAGE = (byte) 0x06;
+    public static final byte ASL = (byte) 0x0A;
+    public static final byte ASL_ABSOLUTE = (byte) 0x0E;
+    public static final byte ASL_ZERO_PAGE_X = (byte) 0x16;
+    public static final byte NOP_IMPLIED = (byte) 0x1A;
+    public static final byte ASL_ABSOLUTE_X = (byte) 0x1E;
+    public static final byte ROL_ZERO_PAGE = (byte) 0x26;
+    public static final byte ROL = (byte) 0x2A;
+    public static final byte ROL_ABSOLUTE = (byte) 0x2E;
+    public static final byte ROL_ZERO_PAGE_X = (byte) 0x36;
+    public static final byte ROL_ABSOLUTE_X = (byte) 0x3E;
+    public static final byte LSR_ZERO_PAGE = (byte) 0x46;
+    public static final byte LSR = (byte) 0x4A;
+    public static final byte LSR_ABSOLUTE = (byte) 0x4E;
+    public static final byte LSR_ZERO_PAGE_X = (byte) 0x56;
+    public static final byte LSR_ABSOLUTE_X = (byte) 0x5E;
+    public static final byte ROR_ZERO_PAGE = (byte) 0x66;
+    public static final byte ROR = (byte) 0x6A;
+    public static final byte ROR_ABSOLUTE = (byte) 0x6E;
+    public static final byte ROR_ZERO_PAGE_X = (byte) 0x76;
+    public static final byte ROR_ABSOLUTE_X = (byte) 0x7E;
+    public static final byte STX_ZERO_PAGE = (byte) 0x86;
+    public static final byte TXA_IMPLIED = (byte) 0x8A;
+    public static final byte STX_ABSOLUTE = (byte) 0x8E;
+    public static final byte STX_ZERO_PAGE_Y = (byte) 0x96;
+    public static final byte TXS_IMPLIED = (byte) 0x9A;
+    public static final byte SHX_ABSOLUTE_Y = (byte) 0x9E;
+    public static final byte LDX = (byte) 0xA2;
+    public static final byte LDX_ZERO_PAGE = (byte) 0xA6;
+    public static final byte TAX_IMPLIED = (byte) 0xAA;
+    public static final byte LDX_ABSOLUTE = (byte) 0xAE;
+    public static final byte LDX_ZERO_PAGE_Y = (byte) 0xB6;
+    public static final byte TSX_IMPLIED = (byte) 0xBA;
+    public static final byte LDX_ABSOLUTE_Y = (byte) 0xBE;
+    public static final byte DEC_ZERO_PAGE = (byte) 0xC6;
+    public static final byte DEX_IMPLIED = (byte) 0xCA;
+    public static final byte DEC_ABSOLUTE = (byte) 0xCE;
+    public static final byte DEC_ZERO_PAGE_X = (byte) 0xD6;
+    public static final byte DEC_ABSOLUTE_X = (byte) 0xDE;
+    public static final byte INC_ZERO_PAGE = (byte) 0xE6;
+    public static final byte INC_ABSOLUTE = (byte) 0xEE;
+    public static final byte INC_ZERO_PAGE_X = (byte) 0xF6;
+    public static final byte INC_ABSOLUTE_X = (byte) 0xFE;
+    public static final byte SLO_X_IND = (byte) 0x03;
+    public static final byte SLO_ZERO_PAGE = (byte) 0x07;
+    public static final byte ANC = (byte) 0x0B;
+    public static final byte SLO_ABSOLUTE = (byte) 0x0F;
+    public static final byte SLO_IND_Y = (byte) 0x13;
+    public static final byte SLO_ZERO_PAGE_X = (byte) 0x17;
+    public static final byte SLO_ABSOLUTE_Y = (byte) 0x1B;
+    public static final byte SLO_ABSOLUTE_X = (byte) 0x1F;
+    public static final byte RLA_X_IND = (byte) 0x23;
+    public static final byte RLA_ZERO_PAGE = (byte) 0x27;
+    public static final byte RLA_ABSOLUTE = (byte) 0x2F;
+    public static final byte RLA_IND_Y = (byte) 0x33;
+    public static final byte RLA_ZERO_PAGE_X = (byte) 0x37;
+    public static final byte RLA_ABSOLUTE_Y = (byte) 0x3B;
+    public static final byte RLA_ABSOLUTE_X = (byte) 0x3F;
+    public static final byte SRE_X_IND = (byte) 0x43;
     public static final byte SRE_ZERO_PAGE = (byte) 0x47;
+    public static final byte ALR = (byte) 0x4B;
     public static final byte SRE_ABSOLUTE = (byte) 0x4F;
-    public static final byte SRE_INDIRECT_Y = (byte) 0x53;
+    public static final byte SRE_IND_Y = (byte) 0x53;
     public static final byte SRE_ZERO_PAGE_X = (byte) 0x57;
     public static final byte SRE_ABSOLUTE_Y = (byte) 0x5B;
     public static final byte SRE_ABSOLUTE_X = (byte) 0x5F;
-    public static final byte STX = (byte) 0x86;
-    public static final byte STX_ZERO_PAGE_Y = (byte) 0x96;
-    public static final byte STX_ABSOLUTE = (byte) 0x8E;
-    public static final byte STY = (byte) 0x84;
-    public static final byte STY_ZERO_PAGE_X = (byte) 0x94;
-    public static final byte STY_ABSOLUTE = (byte) 0x8C;
-    public static final byte TAX = (byte) 0xAA;
-    public static final byte TAY = (byte) 0xA8;
-    public static final byte TSX = (byte) 0xBA;
-    public static final byte TXA = (byte) 0x8A;
-    public static final byte TXS = (byte) 0x9A;
-    public static final byte TYA = (byte) 0x98;
-    public static final byte SBC_IMMEDIATE = (byte) 0xEB;
-    public static final byte SHY_ABSOLUTE_X = (byte) 0x9C;
-    public static final byte SHX_ABSOLUTE_Y = (byte) 0x9E;
-    public static final byte XAA_IMMEDIATE = (byte) 0x8B;
-
-    
+    public static final byte RRA_X_IND = (byte) 0x63;
+    public static final byte RRA_ZERO_PAGE = (byte) 0x67;
+    public static final byte ARR = (byte) 0x6B;
+    public static final byte RRA_ABSOLUTE = (byte) 0x6F;
+    public static final byte RRA_IND_Y = (byte) 0x73;
+    public static final byte RRA_ZERO_PAGE_X = (byte) 0x77;
+    public static final byte RRA_ABSOLUTE_Y = (byte) 0x7B;
+    public static final byte RRA_ABSOLUTE_X = (byte) 0x7F;
+    public static final byte SAX_X_IND = (byte) 0x83;
+    public static final byte SAX_ZERO_PAGE = (byte) 0x87;
+    public static final byte ANE = (byte) 0x8B;
+    public static final byte SAX_ABSOLUTE = (byte) 0x8F;
+    public static final byte SHA_IND_Y = (byte) 0x93;
+    public static final byte SAX_ZERO_PAGE_Y = (byte) 0x97;
+    public static final byte TAS_ABSOLUTE_Y = (byte) 0x9B;
+    public static final byte SHA_ABSOLUTE_Y = (byte) 0x9F;
+    public static final byte LAX_X_IND = (byte) 0xA3;
+    public static final byte LAX_ZERO_PAGE = (byte) 0xA7;
+    public static final byte LXA = (byte) 0xAB;
+    public static final byte LAX_ABSOLUTE = (byte) 0xAF;
+    public static final byte LAX_IND_Y = (byte) 0xB3;
+    public static final byte LAX_ZERO_PAGE_Y = (byte) 0xB7;
+    public static final byte LAS_ABSOLUTE_Y = (byte) 0xBB;
+    public static final byte LAX_ABSOLUTE_Y = (byte) 0xBF;
+    public static final byte DCP_X_IND = (byte) 0xC3;
+    public static final byte DCP_ZERO_PAGE = (byte) 0xC7;
+    public static final byte SBX = (byte) 0xCB;
+    public static final byte DCP_ABSOLUTE = (byte) 0xCF;
+    public static final byte DCP_IND_Y = (byte) 0xD3;
+    public static final byte DCP_ZERO_PAGE_X = (byte) 0xD7;
+    public static final byte DCP_ABSOLUTE_Y = (byte) 0xDB;
+    public static final byte DCP_ABSOLUTE_X = (byte) 0xDF;
+    public static final byte ISC_X_IND = (byte) 0xE3;
+    public static final byte ISC_ZERO_PAGE = (byte) 0xE7;
+    public static final byte USBC = (byte) 0xEB;
+    public static final byte ISC_ABSOLUTE = (byte) 0xEF;
+    public static final byte ISC_IND_Y = (byte) 0xF3;
+    public static final byte ISC_ZERO_PAGE_X = (byte) 0xF7;
+    public static final byte ISC_ABSOLUTE_Y = (byte) 0xFB;
+    public static final byte ISC_ABSOLUTE_X = (byte) 0xFF;
 
     /**
      * ADD operation with carry
@@ -238,13 +257,13 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(ADC_ABSOLUTE_Y, "ADC");
     }
-    public static void adc_indexed_indirect() {
+    public static void adc_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ADC_INDEXED_INDIRECT, "ADC");
+            Debug.printASM(ADC_X_IND, "ADC");
     }
-    public static void adc_indirect_indexed() {
+    public static void adc_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ADC_INDIRECT_INDEXED, "ADC");
+            Debug.printASM(ADC_IND_Y, "ADC");
     }
 
 
@@ -273,13 +292,13 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(AND_ABSOLUTE_Y, "AND");
     }
-    public static void and_indexed_indirect() {
+    public static void and_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_INDEXED_INDIRECT, "AND");
+            Debug.printASM(AND_X_IND, "AND");
     }
-    public static void and_indirect_indexed() {
+    public static void and_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(AND_INDIRECT_INDEXED, "AND");
+            Debug.printASM(AND_IND_Y, "AND");
     }
 
     
@@ -323,15 +342,15 @@ public class Instructions {
 
     public static void bcc() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BCC, "BCC");
+            Debug.printASM(BCC_RELATIVE, "BCC");
     }
     public static void bcs() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BCS, "BCS");
+            Debug.printASM(BCS_RELATIVE, "BCS");
     }
     public static void beq() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BEQ, "BEQ");
+            Debug.printASM(BEQ_RELATIVE, "BEQ");
     }
 
     /**
@@ -339,7 +358,7 @@ public class Instructions {
      */
     public static void bit() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BIT, "BIT i");
+            Debug.printASM(BIT_ZERO_PAGE, "BIT i");
     }   
 
     /**
@@ -363,7 +382,7 @@ public class Instructions {
 
     public static void bmi() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BMI, "BMI");
+            Debug.printASM(BMI_RELATIVE, "BMI");
     }
 
     /**
@@ -371,7 +390,7 @@ public class Instructions {
      */
     public static void bne() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BNE, "BNE");
+            Debug.printASM(BNE_RELATIVE, "BNE");
     }
 
     /**
@@ -390,7 +409,7 @@ public class Instructions {
 
 
         if (ArgsHandler.debug) 
-            Debug.printASM(BPL, "BPL");
+            Debug.printASM(BPL_RELATIVE, "BPL");
     }
 
     /**
@@ -429,15 +448,16 @@ public class Instructions {
         Registers.pc--;
 
         if (ArgsHandler.debug) 
-            Debug.printASM(BRK, "BRK");
+            Debug.printASM(BRK_IMPLIED, "BRK");
     }
     public static void bvc() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BVC, "BVC");
+            Debug.printASM(BVC_RELATIVE, "BVC");
     }
+
     public static void bvs() {
         if (ArgsHandler.debug) 
-            Debug.printASM(BVS, "BVS");
+            Debug.printASM(BVS_RELATIVE, "BVS");
     }
 
     /**
@@ -448,7 +468,7 @@ public class Instructions {
         Registers.setCarryFlag(false);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(CLC, "CLC");
+            Debug.printASM(CLC_IMPLIED, "CLC");
     }
 
     /**
@@ -459,7 +479,7 @@ public class Instructions {
         Registers.setDecimalFlag(false);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(CLD, "CLD");
+            Debug.printASM(CLD_IMPLIED, "CLD");
     }
 
     /**
@@ -470,7 +490,7 @@ public class Instructions {
         Registers.setInterruptFlag(false);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(CLI, "CLI");
+            Debug.printASM(CLI_IMPLIED, "CLI");
     }
 
     /**
@@ -481,7 +501,7 @@ public class Instructions {
         Registers.setOverflowFlag(false);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(CLV, "CLV");
+            Debug.printASM(CLV_IMPLIED, "CLV");
     }
     
     /**
@@ -515,15 +535,14 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(CMP_ABSOLUTE_Y, "CMP");
     }
-    public static void cmp_indexed_indirect() {
+    public static void cmp_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_INDEXED_INDIRECT, "CMP");
+            Debug.printASM(CMP_X_IND, "CMP");
     }
-    public static void cmp_indirect_indexed() {
+    public static void cmp_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(CMP_INDIRECT_INDEXED, "CMP");
+            Debug.printASM(CMP_IND_Y, "CMP");
     }
-
 
     public static void cpx() {
         if (ArgsHandler.debug) 
@@ -539,7 +558,6 @@ public class Instructions {
             Debug.printASM(CPX_ABSOLUTE, "CPX");
     }
 
-
     public static void cpy() {
         if (ArgsHandler.debug) 
             Debug.printASM(CPY, "CPY");
@@ -553,12 +571,9 @@ public class Instructions {
             Debug.printASM(CPY_ABSOLUTE, "CPY");
     }
 
-
-
-
-    public static void dec() {
+    public static void dec_zero_page() {
         if (ArgsHandler.debug) 
-            Debug.printASM(DEC, "DEC");
+            Debug.printASM(DEC_ZERO_PAGE, "DEC");
     }
 
     public static void dec_zero_page_x() {
@@ -578,11 +593,11 @@ public class Instructions {
 
     public static void dex() {
         if (ArgsHandler.debug) 
-            Debug.printASM(DEX, "DEX");
+            Debug.printASM(DEX_IMPLIED, "DEX");
     }
     public static void dey() {
         if (ArgsHandler.debug) 
-            Debug.printASM(DEY, "DEY");
+            Debug.printASM(DEY_IMPLIED, "DEY");
     }
 
     /**
@@ -619,20 +634,20 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_ABSOLUTE_Y, "EOR 6");
     }
-    public static void eor_indexed_indirect() {
+    public static void eor_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_INDEXED_INDIRECT, "EOR 7");
+            Debug.printASM(EOR_X_IND, "EOR 7");
     }
-    public static void eor_indirect_indexed() {
+    public static void eor_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(EOR_INDIRECT_INDEXED, "EOR 8");
+            Debug.printASM(EOR_IND_Y, "EOR 8");
     }
 
 
     /**
      * Increment value in memory
      */
-    public static void inc() { 
+    public static void inc_zero_page() { 
         // Fetch address
         short address = fetchAddress(); 
 
@@ -646,7 +661,7 @@ public class Instructions {
         Registers.setNegativeFlag((value & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(INC, "INC 1");
+            Debug.printASM(INC_ZERO_PAGE, "INC 1");
     }
     public static void inc_zero_page_x() {
         
@@ -695,7 +710,7 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(INX, "INX");
+            Debug.printASM(INX_IMPLIED, "INX");
     }
 
 
@@ -706,17 +721,17 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.y & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(INY, "INY");
+            Debug.printASM(INY_IMPLIED, "INY");
     }
 
 
     public static void jmp() {
         if (ArgsHandler.debug) 
-            Debug.printASM(JMP, "JMP");
+            Debug.printASM(JMP_ABSOLUTE, "JMP");
     }
     public static void jmp_indirect() {
         if (ArgsHandler.debug) 
-            Debug.printASM(JMP_INDIRECT, "JMP");
+            Debug.printASM(JMP_IND, "JMP");
     }
 
     /**
@@ -744,7 +759,7 @@ public class Instructions {
         Registers.pc--;
 
         if (ArgsHandler.debug) 
-            Debug.printASM(JSR, address, "JSR", "$");
+            Debug.printASM(JSR_ABSOLUTE, address, "JSR", "$");
 
     }
     
@@ -792,13 +807,13 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(LDA_ABSOLUTE_Y, "LDA 5");
     }
-    public static void lda_indexed_indirect() {
+    public static void lda_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_INDEXED_INDIRECT, "LDA 7");
+            Debug.printASM(LDA_X_IND, "LDA 7");
     }
-    public static void lda_indirect_indexed() {
+    public static void lda_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(LDA_INDIRECT_INDEXED, "LDA 9");
+            Debug.printASM(LDA_IND_Y, "LDA 9");
     }
 
     /**
@@ -930,15 +945,15 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_ABSOLUTE_Y, "ORA5");
     }
-    public static void ora_indexed_indirect() {
+    public static void ora_x_ind() {
 
 
         if (ArgsHandler.debug) 
-            Debug.printASM(ORA_INDEXED_INDIRECT, "ORA6");
+            Debug.printASM(ORA_X_IND, "ORA6");
     }
-    public static void ora_indirect_indexed() {
+    public static void ora_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(ORA_INDIRECT_INDEXED, "ORA7");
+            Debug.printASM(ORA_IND_Y, "ORA7");
     }
 
 
@@ -946,15 +961,15 @@ public class Instructions {
 
     public static void pha() {
         if (ArgsHandler.debug) 
-            Debug.printASM(PHA, "PHA");
+            Debug.printASM(PHA_IMPLIED, "PHA");
     }
     public static void php() {
         if (ArgsHandler.debug) 
-            Debug.printASM(PHP, "PHP");
+            Debug.printASM(PHP_IMPLIED, "PHP");
     }
     public static void pla() {
         if (ArgsHandler.debug) 
-            Debug.printASM(PLA, "PLA");
+            Debug.printASM(PLA_IMPLIED, "PLA");
     }
 
     /**
@@ -970,7 +985,7 @@ public class Instructions {
         Registers.status = (byte) ((statusRegister & ~Registers.BREAK_MASK) | Registers.UNUSED_MASK);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(PLP, "PLP");
+            Debug.printASM(PLP_IMPLIED, "PLP");
     }
     
 
@@ -1018,7 +1033,7 @@ public class Instructions {
     }
     public static void rti() {
         if (ArgsHandler.debug) 
-            Debug.printASM(RTI, "RTI");
+            Debug.printASM(RTI_IMPLIED, "RTI");
     }
 
     /**
@@ -1043,7 +1058,7 @@ public class Instructions {
         Registers.pc = address; 
 
         if (ArgsHandler.debug) 
-            Debug.printASM(RTS, "RTS");
+            Debug.printASM(RTS_IMPLIED, "RTS");
     }
     public static void sbc() {
         if (ArgsHandler.debug) 
@@ -1069,22 +1084,22 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(SBC_ABSOLUTE_Y, "SBC");
     }
-    public static void sbc_indexed_indirect() {
+    public static void sbc_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_INDEXED_INDIRECT, "SBC");
+            Debug.printASM(SBC_X_IND, "SBC");
     }
-    public static void sbc_indirect_indexed() {
+    public static void sbc_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SBC_INDIRECT_INDEXED, "SBC");
+            Debug.printASM(SBC_IND_Y, "SBC");
     }
     
 
     /**
      * Shift right XOR
      */
-    public static void sre_indirect_x() {
+    public static void sre_x_ind() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_INDIRECT_X, "SRE 1");
+            Debug.printASM(SRE_X_IND, "SRE 1");
     }
     
     public static void sre_zero_page() {
@@ -1107,9 +1122,9 @@ public class Instructions {
             Debug.printASM(SRE_ABSOLUTE, "SRE3 ");
     }
     
-    public static void sre_indirect_y() {
+    public static void sre_ind_y() {
         if (ArgsHandler.debug)
-            Debug.printASM(SRE_INDIRECT_Y, "SRE4");
+            Debug.printASM(SRE_IND_Y, "SRE4");
     }
     
     public static void sre_zero_page_x() {
@@ -1131,7 +1146,7 @@ public class Instructions {
 
     public static void sec() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SEC, "SEC");
+            Debug.printASM(SEC_IMPLIED, "SEC");
     }  
 
     /**
@@ -1142,7 +1157,7 @@ public class Instructions {
         Registers.setDecimalFlag(true);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(SED, "SED");
+            Debug.printASM(SED_IMPLIED, "SED");
     }
 
     /**
@@ -1153,13 +1168,13 @@ public class Instructions {
         Registers.setInterruptFlag(true);
 
         if (ArgsHandler.debug)
-            Debug.printASM(SEI, "SEI");
+            Debug.printASM(SEI_IMPLIED, "SEI");
         
     }
 
-    public static void sta() {
+    public static void sta_zero_page() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA, "STA");
+            Debug.printASM(STA_ZERO_PAGE, "STA");
     }
     public static void sta_zero_page_x() {
         if (ArgsHandler.debug) 
@@ -1177,21 +1192,21 @@ public class Instructions {
         if (ArgsHandler.debug) 
             Debug.printASM(STA_ABSOLUTE_Y, "STA");
     }
-    public static void sta_indexed_indirect() {
+    public static void sta_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_INDEXED_INDIRECT, "STA");
+            Debug.printASM(STA_X_IND, "STA");
     }
-    public static void sta_indirect_indexed() {
+    public static void sta_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STA_INDIRECT_INDEXED, "STA");
+            Debug.printASM(STA_IND_Y, "STA");
     }
 
     /**
      * 
      */
-    public static void stx() {
+    public static void stx_zero_page() {
         if (ArgsHandler.debug) 
-            Debug.printASM(STX, "STX");
+            Debug.printASM(STX_ZERO_PAGE, "STX");
     }
 
     public static void stx_zero_page_y() {
@@ -1214,9 +1229,9 @@ public class Instructions {
 
     }
     
-    public static void sty() {
+    public static void sty_zero_page() {
         if (ArgsHandler.debug) 
-        Debug.printASM(STY, "STY");
+        Debug.printASM(STY_ZERO_PAGE, "STY");
     }
     public static void sty_zero_page_x() {
         if (ArgsHandler.debug) 
@@ -1238,7 +1253,7 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(TAX, "TAX");
+            Debug.printASM(TAX_IMPLIED, "TAX");
     }
 
     /**
@@ -1251,7 +1266,7 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.y & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(TAY, "TAY");
+            Debug.printASM(TAY_IMPLIED, "TAY");
     }
 
     /**
@@ -1265,7 +1280,7 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.x & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(TSX, "TSX");
+            Debug.printASM(TSX_IMPLIED, "TSX");
     }
 
     /**
@@ -1279,7 +1294,7 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(TXA, "TXA");
+            Debug.printASM(TXA_IMPLIED, "TXA");
     }
 
     /**
@@ -1290,7 +1305,7 @@ public class Instructions {
         Registers.sp = Registers.x;
 
         if (ArgsHandler.debug) 
-            Debug.printASM(TXS, "TXS");
+            Debug.printASM(TXS_IMPLIED, "TXS");
     }
 
     /**
@@ -1304,7 +1319,7 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
 
         if (ArgsHandler.debug) 
-            Debug.printASM(TYA, "TYA");
+            Debug.printASM(TYA_IMPLIED, "TYA");
     }
     public static void rla_zero_page() {
         if (ArgsHandler.debug) 
@@ -1331,19 +1346,19 @@ public class Instructions {
             Debug.printASM(RLA_ABSOLUTE_Y, "RLA");
     }
     
-    public static void rla_indexed_indirect() {
+    public static void rla_x_ind() {
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_INDEXED_INDIRECT, "RLA");
+            Debug.printASM(RLA_X_IND, "RLA");
     }
     
-    public static void rla_indirect_indexed() {
+    public static void rla_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(RLA_INDIRECT_INDEXED, "RLA");
+            Debug.printASM(RLA_IND_Y, "RLA");
     }
     
-    public static void rra_indirect_x() {
+    public static void rra_x_ind() {
         if (ArgsHandler.debug)
-            Debug.printASM(RRA_INDIRECT_X, "RRA");
+            Debug.printASM(RRA_X_IND, "RRA");
     }
     
     public static void rra_zero_page() {
@@ -1356,9 +1371,9 @@ public class Instructions {
             Debug.printASM(RRA_ABSOLUTE, "RRA");
     }
     
-    public static void rra_indirect_y() {
+    public static void rra_ind_y() {
         if (ArgsHandler.debug)
-            Debug.printASM(RRA_INDIRECT_Y, "RRA");
+            Debug.printASM(RRA_IND_Y, "RRA");
     }
     
     public static void rra_zero_page_x() {
@@ -1449,7 +1464,7 @@ public class Instructions {
     /**
      * ASL + ORA
      */
-    public static void slo_indexed_indirect() {
+    public static void slo_x_ind() {
 
         short address = fetchAddress();
         address += Registers.x;
@@ -1463,12 +1478,12 @@ public class Instructions {
         Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
         
         if (ArgsHandler.debug) 
-            Debug.printASM(SLO_INDEXED_INDIRECT, "SLO6");
+            Debug.printASM(SLO_X_IND, "SLO6");
     }
     
-    public static void slo_indirect_indexed() {
+    public static void slo_ind_y() {
         if (ArgsHandler.debug) 
-            Debug.printASM(SLO_INDIRECT_INDEXED, "SLO7");
+            Debug.printASM(SLO_IND_Y, "SLO7");
     }
 
     public static void lax_zero_page() {
@@ -1481,9 +1496,9 @@ public class Instructions {
             Debug.printASM(LAX_ABSOLUTE, "LAX");
     }
     
-    public static void lax_indirect_y() {
+    public static void lax_ind_y() {
         if (ArgsHandler.debug)
-            Debug.printASM(LAX_INDIRECT_Y, "LAX");
+            Debug.printASM(LAX_IND_Y, "LAX");
     }
     
     public static void lax_zero_page_y() {
@@ -1496,6 +1511,34 @@ public class Instructions {
             Debug.printASM(LAX_ABSOLUTE_Y, "LAX");
     }
     
+    public static void lax_x_ind() {
+
+    }  
+
+
+    public static void dcp_x_ind() {
+
+    }  
+    public static void dcp_zero_page() {
+
+    }  
+    public static void dcp_absolute() {
+
+    }  
+    public static void dcp_ind_y() {
+
+    }  
+    public static void dcp_zero_page_x() {
+
+    }  
+    public static void dcp_absolute_y() {
+
+    }  
+    public static void dcp_absolute_x() {
+
+    }  
+
+
     /**
      *  ACC and X
      */
@@ -1516,19 +1559,12 @@ public class Instructions {
         if (ArgsHandler.debug)
             Debug.printASM(SAX_ZERO_PAGE_Y, "SAX 3");
     }
+    public static void sax_x_ind() {
+
+    }
     public static void sbc_immediate() {
         if (ArgsHandler.debug)
-            Debug.printASM(SBC_IMMEDIATE, "SBC");
-    }
-    
-    public static void ahx_absolute_y() {
-        if (ArgsHandler.debug)
-            Debug.printASM(AHX_ABSOLUTE_Y, "AHX ");
-    }
-    
-    public static void ahx_indirect_y() {
-        if (ArgsHandler.debug)
-            Debug.printASM(AHX_INDIRECT_Y, "AHX");
+            Debug.printASM(SBC, "SBC");
     }
     
     public static void shy_absolute_x() {
@@ -1540,34 +1576,9 @@ public class Instructions {
         if (ArgsHandler.debug)
             Debug.printASM(SHX_ABSOLUTE_Y, "SHX");
     }
-    public static void kil_implicit_02() {
-        if (ArgsHandler.debug)
-            Debug.printASM(KIL_IMPLICIT_02, "KIL");
-    }
-    
-    public static void kil_implicit_12() {
-        if (ArgsHandler.debug)
-            Debug.printASM(KIL_IMPLICIT_12, "KIL");
-    }
-    
-    public static void kil_implicit_22() {
-        if (ArgsHandler.debug)
-            Debug.printASM(KIL_IMPLICIT_22, "KIL");
-    }
-    
-    public static void kil_implicit_32() {
-        if (ArgsHandler.debug)
-            Debug.printASM(KIL_IMPLICIT_32, "KIL");
-    }
-    
-    public static void kil_implicit_42() {
-        if (ArgsHandler.debug)
-            Debug.printASM(KIL_IMPLICIT_42, "KIL");
-    }
-    
-    public static void kil_implicit_92() {
-        if (ArgsHandler.debug)
-            Debug.printASM(KIL_IMPLICIT_92, "KIL");
+
+    public static void las_absolute_y() {
+
     }
 
     public static void xaa_immediate() {
@@ -1578,8 +1589,91 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setNegativeFlag((Registers.acc & Registers.OVERFLOW_MASK) != 0);
         if (ArgsHandler.debug)
-            Debug.printASM(XAA_IMMEDIATE, "XAA");
+            Debug.printASM(ANE, "XAA");
     }
+
+
+    public static void nop_zero_page() {
+
+    }
+
+    public static void nop_zero_page_x() {
+        
+    }
+
+    public static void nop_absolute() {
+        
+    }
+    public static void nop_absolute_x() {
+        
+    }
+
+    public static void jam() {
+
+    }
+    public static void anc() {
+        
+    }
+    public static void alr() {
+        
+    }
+    public static void arr() {
+
+    }
+
+    public static void ane() {
+        
+    }
+
+    public static void sha_ind_y() {
+
+    }
+
+    public static void tas_absolute_y() {
+
+    }
+    
+    public static void sha_absolute_y() {
+
+    }
+
+    public static void lxa() {
+
+    }
+
+    public static void sbx() {
+
+    }
+
+    public static void isc_x_ind() {
+        
+    }
+    public static void isc_zero_page() {
+        
+    }
+    public static void isc_absolute() {
+        
+    }
+    public static void isc_ind_y() {
+        
+    }
+    public static void isc_zero_page_x() {
+        
+    }
+    public static void isc_absolute_y() {
+        
+    }
+    public static void isc_absolute_x() {
+        
+    }
+
+    public static void usbc() {
+
+    }
+
+
+
+
 
     private static byte fetchZeroPageAddress() {
           // Get the address
@@ -1587,6 +1681,7 @@ public class Instructions {
           byte address = (byte) (Cpu.fetchNextValue() & 0xFF);  
           return address;    
     }
+
 
     private static byte fetchZeroPageXAddress() {
         byte zero_page_address = fetchZeroPageAddress();
