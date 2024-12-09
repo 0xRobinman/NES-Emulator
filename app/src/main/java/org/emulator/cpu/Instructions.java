@@ -228,6 +228,7 @@ public class Instructions {
     public static final byte ISC_ZERO_PAGE_X = (byte) 0xF7;
     public static final byte ISC_ABSOLUTE_Y = (byte) 0xFB;
     public static final byte ISC_ABSOLUTE_X = (byte) 0xFF;
+    private static int pageCrossed = 0;
 
     /**
      * ADD operation with carry
@@ -259,12 +260,17 @@ public class Instructions {
     }
     public static int adc_absolute_x() {
     int clockCycles = 4;
+
+
+    clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(ADC_ABSOLUTE_X, "ADC");
     return clockCycles;
     }
     public static int adc_absolute_y() {
     int clockCycles = 4;
+
+    clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(ADC_ABSOLUTE_Y, "ADC");
     return clockCycles;
@@ -277,6 +283,9 @@ public class Instructions {
     }
     public static int adc_ind_y() {
     int clockCycles = 5;
+
+
+    clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(ADC_IND_Y, "ADC");
     return clockCycles;
@@ -349,6 +358,8 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
+        clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(AND_ABSOLUTE_X, "AND 5");
     return clockCycles;
@@ -363,6 +374,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
+        clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(AND_ABSOLUTE_Y, "AND 6");
     return clockCycles;
@@ -390,6 +402,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
+        clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(AND_IND_Y, "AND 8");
     return clockCycles;
@@ -401,7 +414,7 @@ public class Instructions {
      * Arithmetic shift left.
      */
     public static int asl() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
 
         if (ArgsHandler.debug) 
@@ -409,19 +422,19 @@ public class Instructions {
     return clockCycles;
     }
     public static int asl_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug) 
             Debug.printASM(ASL_ZERO_PAGE, "ASL 2");
     return clockCycles;
     }
     public static int asl_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(ASL_ZERO_PAGE_X, "ASL 3");
     return clockCycles;
     }
     public static int asl_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
         short address = fetchAddress();
         byte value = Ram.read(address);
@@ -437,7 +450,7 @@ public class Instructions {
     return clockCycles;
     }
     public static int asl_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         if (ArgsHandler.debug) 
             Debug.printASM(ASL_ABSOLUTE_X, "ASL 5");
     return clockCycles;
@@ -445,24 +458,45 @@ public class Instructions {
 
 
     public static int bcc() {
-    int clockCycles = 0;
+    int clockCycles = 2;
+    
+    // If jumping...
+    clockCycles++;
+
+    // ... 
+
+    short currentAddress = Registers.pc;
+    pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+    clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(BCC_RELATIVE, "BCC");
     return clockCycles;
     }
     public static int bcs() {
-    int clockCycles = 0;
+    int clockCycles = 2;
+    
+    // If jumping..
+    clockCycles++;
+
+    // ... 
+
+    short currentAddress = Registers.pc;
+    pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+    clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(BCS_RELATIVE, "BCS");
     return clockCycles;
     }
     public static int beq() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if ((Registers.status & Registers.ZERO_MASK) == 1) {
+            short currentAddress = Registers.pc;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
             Registers.pc++;
             Registers.pc += offset;
+            pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+            clockCycles += pageCrossed;
             Registers.pc--;
         }         
         if (ArgsHandler.debug) 
@@ -476,7 +510,7 @@ public class Instructions {
      * 
      */
     public static int bit() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(BIT_ZERO_PAGE, "BIT i");
     return clockCycles;
@@ -486,7 +520,7 @@ public class Instructions {
      * Bit test
      */
     public static int bit_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
 
         // Convert them to little endian
         short address = fetchAddress();
@@ -507,14 +541,17 @@ public class Instructions {
      * Branch if minus
      */
     public static int bmi() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         if ((Registers.status & Registers.NEGATIVE_MASK) != 0) {
+            clockCycles++;
+            short currentAddress = Registers.pc;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
             Registers.pc++;
-            System.out.println("Branching");
             Registers.pc += offset;
+            pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+            clockCycles += pageCrossed;
             Registers.pc--;
         }
         
@@ -527,13 +564,17 @@ public class Instructions {
      * Branch not equals
      */
     public static int bne() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         if ((Registers.status & Registers.ZERO_MASK) == 0) {
+            short currentAddress = Registers.pc;
+            clockCycles++;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
             Registers.pc++;
             Registers.pc += offset;
+            pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+            clockCycles += pageCrossed;
             Registers.pc--;
         } 
 
@@ -547,14 +588,17 @@ public class Instructions {
      * Branch on plus. If the N flag is 0, then we branch.
      */
     public static int bpl() {
-    int clockCycles = 0;
+        int clockCycles = 2;
         Registers.pc++;
         byte relativeAddress = Cpu.fetchNextValue();
 
         // Branch by the relative address.
         if ((Registers.status & Registers.NEGATIVE_MASK) == 0) {
-            Registers.pc++;
+            clockCycles++;
+            short currentAddress = Registers.pc;
             Registers.pc += relativeAddress;
+            pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+            clockCycles += pageCrossed;            Registers.pc++;
             Registers.pc--;
     
         }
@@ -570,7 +614,7 @@ public class Instructions {
      *  Force a break
      */
     public static int brk() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         
         Registers.pc++;
         /*
@@ -615,14 +659,32 @@ public class Instructions {
     return clockCycles;
     }
     public static int bvc() {
-    int clockCycles = 0;
+    int clockCycles = 2;
+
+    // If jumping;
+    clockCycles++;
+    short currentAddress = Registers.pc;
+    
+    // ... 
+
+    pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+    clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(BVC_RELATIVE, "BVC");
     return clockCycles;
     }
 
     public static int bvs() {
-    int clockCycles = 0;
+    int clockCycles = 2;
+
+    // If jumping
+    clockCycles++;
+    short currentAddress = Registers.pc;
+
+    // ... 
+
+    pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
+    clockCycles += pageCrossed;
         if (ArgsHandler.debug) 
             Debug.printASM(BVS_RELATIVE, "BVS");
     return clockCycles;
@@ -632,7 +694,7 @@ public class Instructions {
      * Clear the carry flag
      */
     public static int clc() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.setCarryFlag(false);
 
@@ -645,7 +707,7 @@ public class Instructions {
      * CLear decimal flag
      */
     public static int cld() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.setDecimalFlag(false);
 
@@ -658,7 +720,7 @@ public class Instructions {
      * Clear interrupt 
      */
     public static int cli() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.setInterruptFlag(false);
 
@@ -671,7 +733,7 @@ public class Instructions {
      * Clear overflow flag
      */
     public static int clv() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.setOverflowFlag(false);
 
@@ -684,7 +746,7 @@ public class Instructions {
      *  Compare
      */
     public static int cmp() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.pc++;
         byte value = Cpu.fetchNextValue();
@@ -700,7 +762,7 @@ public class Instructions {
     }
 
     public static int cmp_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
         byte result = (byte) (Registers.acc - value);
@@ -713,7 +775,7 @@ public class Instructions {
     return clockCycles;
     }
     public static int cmp_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
             byte address = fetchZeroPageXAddress();
             byte value = Ram.read(address);
             byte result = (byte) (Registers.acc - value);
@@ -726,7 +788,7 @@ public class Instructions {
     return clockCycles;
     }
     public static int cmp_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
 
         short address = fetchAddress();
         byte value = Ram.read(address);
@@ -741,105 +803,114 @@ public class Instructions {
     return clockCycles;
     }
     public static int cmp_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(CMP_ABSOLUTE_X, "CMP 5");
     return clockCycles;
     }
     public static int cmp_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+    clockCycles += pageCrossed;
+
+
         if (ArgsHandler.debug) 
             Debug.printASM(CMP_ABSOLUTE_Y, "CMP 6");
     return clockCycles;
     }
     public static int cmp_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(CMP_X_IND, "CMP 7");
     return clockCycles;
     }
     public static int cmp_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(CMP_IND_Y, "CMP 8");
     return clockCycles;
     }
 
     public static int cpx() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(CPX, "CPX");
     return clockCycles;
     }
 
     public static int cpx_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(CPX_ZERO_PAGE, "CPX");
     return clockCycles;
     }
     public static int cpx_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(CPX_ABSOLUTE, "CPX");
     return clockCycles;
     }
 
     public static int cpy() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(CPY, "CPY");
     return clockCycles;
     }
     public static int cpy_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(CPY_ZERO_PAGE, "CPY");
     return clockCycles;
     }
     public static int cpy_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(CPY_ABSOLUTE, "CPY");
     return clockCycles;
     }
 
     public static int dec_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug) 
             Debug.printASM(DEC_ZERO_PAGE, "DEC");
     return clockCycles;
     }
 
     public static int dec_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(DEC_ZERO_PAGE_X, "DEC");
     return clockCycles;
     }
     public static int dec_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(DEC_ABSOLUTE, "DEC");
     return clockCycles;
     }
     public static int dec_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         if (ArgsHandler.debug) 
             Debug.printASM(DEC_ABSOLUTE_X, "DEC");
     return clockCycles;
     }
 
-
-
     public static int dex() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(DEX_IMPLIED, "DEX");
     return clockCycles;
     }
     public static int dey() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(DEY_IMPLIED, "DEY");
     return clockCycles;
@@ -849,13 +920,13 @@ public class Instructions {
      * Exclusive OR (XOR)
      */
     public static int eor() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(EOR, "EOR 1");
     return clockCycles;
     }
     public static int eor_zero_page() {       
-    int clockCycles = 0;
+    int clockCycles = 3;
         byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
         Registers.acc ^= value;
@@ -867,37 +938,49 @@ public class Instructions {
     return clockCycles;
     }
     public static int eor_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_ZERO_PAGE_X, "EOR 3");
     return clockCycles;
     }
     public static int eor_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_ABSOLUTE, "EOR 4");
     return clockCycles;
     }
     public static int eor_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_ABSOLUTE_X, "EOR 5");
     return clockCycles;
     }
     public static int eor_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_ABSOLUTE_Y, "EOR 6");
     return clockCycles;
     }
     public static int eor_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_X_IND, "EOR 7");
     return clockCycles;
     }
     public static int eor_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(EOR_IND_Y, "EOR 8");
     return clockCycles;
@@ -908,7 +991,7 @@ public class Instructions {
      * Increment value in memory
      */
     public static int inc_zero_page() { 
-    int clockCycles = 0;
+    int clockCycles = 5;
         // Fetch address
         short address = fetchAddress(); 
 
@@ -926,7 +1009,7 @@ public class Instructions {
     return clockCycles;
     }
     public static int inc_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         
         byte address = fetchZeroPageXAddress();
 
@@ -942,13 +1025,13 @@ public class Instructions {
     return clockCycles;
     }
     public static int inc_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(INC_ABSOLUTE, "INC 3");
     return clockCycles;
     }
     public static int inc_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
  
         // Convert them to little endian
         short address = fetchAddress();  
@@ -971,7 +1054,7 @@ public class Instructions {
      * Increment X
      */
     public static int inx() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.x = (byte)((Registers.x + 1) & 0xFF);
 
@@ -985,7 +1068,7 @@ public class Instructions {
 
 
     public static int iny() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         Registers.y = (byte)((Registers.y + 1) & 0xFF);
 
         Registers.setZeroFlag(Registers.y == 0);
@@ -998,13 +1081,13 @@ public class Instructions {
 
 
     public static int jmp() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(JMP_ABSOLUTE, "JMP");
     return clockCycles;
     }
     public static int jmp_indirect() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug) 
             Debug.printASM(JMP_IND, "JMP");
     return clockCycles;
@@ -1014,7 +1097,7 @@ public class Instructions {
      * Jump to subroutine
      */
     public static int jsr() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
         short address = fetchAddress();
         
@@ -1045,7 +1128,7 @@ public class Instructions {
      * 
      */
     public static int lda() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(LDA, "LDA 1");
     return clockCycles;
@@ -1055,7 +1138,7 @@ public class Instructions {
      * Load a zero page
      */
     public static int lda_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
 
         // Convert them to little endian
         byte address = fetchZeroPageAddress();
@@ -1074,37 +1157,49 @@ public class Instructions {
     return clockCycles;
     }
     public static int lda_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(LDA_ZERO_PAGE_X, "LDA33");
     return clockCycles;
     }
     public static int lda_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(LDA_ABSOLUTE, "LDA 2");
     return clockCycles;
     }
     public static int lda_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+    
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(LDA_ABSOLUTE_X, "LDA 4");
     return clockCycles;
     }
     public static int lda_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(LDA_ABSOLUTE_Y, "LDA 5");
     return clockCycles;
     }
     public static int lda_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(LDA_X_IND, "LDA 7");
     return clockCycles;
     }
     public static int lda_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(LDA_IND_Y, "LDA 9");
     return clockCycles;
@@ -1114,7 +1209,7 @@ public class Instructions {
      * Load the X register (Immediate)
      */
     public static int ldx() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         // Get the next instruction
         Registers.pc++;
         Registers.x = Cpu.fetchNextValue();
@@ -1128,57 +1223,70 @@ public class Instructions {
     return clockCycles;
     }
     public static int ldx_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(LDX_ZERO_PAGE, "LDXs");
     return clockCycles;
     }
     public static int ldx_zero_page_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(LDX_ZERO_PAGE_Y, "LDXb");
     return clockCycles;
     }
     public static int ldx_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(LDX_ABSOLUTE, "LDXa");
     return clockCycles;
     }
     public static int ldx_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+    //
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(LDX_ABSOLUTE_Y, "LDXb");
     return clockCycles;
     }
 
-
+    /** 
+     * Load Y Register
+    */
     public static int ldy() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(LDY, "LDY");
     return clockCycles;
     }
     public static int ldy_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(LDY_ZERO_PAGE, "LDY");
     return clockCycles;
     }
     public static int ldy_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(LDY_ZERO_PAGE_X, "LDY");
     return clockCycles;
     }
     public static int ldy_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(LDY_ABSOLUTE, "LDY");
     return clockCycles;
     }
     public static int ldy_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+    //
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(LDY_ABSOLUTE_X, "LDY");
     return clockCycles;
@@ -1218,7 +1326,7 @@ public class Instructions {
 
 
     public static int nop() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(NOP, "NOP");
     return clockCycles;
@@ -1228,7 +1336,7 @@ public class Instructions {
      * OR with accumulator
      */
     public static int ora() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
 
         if (ArgsHandler.debug) 
@@ -1236,29 +1344,26 @@ public class Instructions {
     return clockCycles;
     }
     public static int ora_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_ZERO_PAGE, "ORA2");
     return clockCycles;
     }
     public static int ora_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_ZERO_PAGE_X, "ORA3");
     return clockCycles;
     }
     public static int ora_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_ABSOLUTE, "ORA4");
     return clockCycles;
     }
 
-    /**
-     * Bitwise OR with acc absolute X addressing.
-     */
     public static int ora_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
 
         short address = fetchAddress();  
         address = (short) ((address + Registers.acc));
@@ -1270,6 +1375,7 @@ public class Instructions {
 
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+        clockCycles += pageCrossed;
 
 
         if (ArgsHandler.debug) 
@@ -1278,13 +1384,17 @@ public class Instructions {
     }
 
     public static int ora_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+    
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_ABSOLUTE_Y, "ORA5");
     return clockCycles;
     }
     public static int ora_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
 
         if (ArgsHandler.debug) 
@@ -1292,7 +1402,11 @@ public class Instructions {
     return clockCycles;
     }
     public static int ora_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
+
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(ORA_IND_Y, "ORA7");
     return clockCycles;
@@ -1302,19 +1416,19 @@ public class Instructions {
 
 
     public static int pha() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(PHA_IMPLIED, "PHA");
     return clockCycles;
     }
     public static int php() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(PHP_IMPLIED, "PHP");
     return clockCycles;
     }
     public static int pla() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(PLA_IMPLIED, "PLA");
     return clockCycles;
@@ -1326,7 +1440,7 @@ public class Instructions {
      * Bit 5 of the status register stays the same
      */
     public static int plp() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         
         
         byte statusRegister = Ram.read((short) (0x0100 + (++Registers.sp)));
@@ -1340,31 +1454,31 @@ public class Instructions {
     
 
     public static int rol() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(ROL, "ROL 1");
     return clockCycles;
     }
     public static int rol_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug) 
             Debug.printASM(ROL_ZERO_PAGE, "ROL 2");
     return clockCycles;
     }
     public static int rol_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(ROL_ZERO_PAGE_X, "ROL 3");
     return clockCycles;
     }
     public static int rol_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(ROL_ABSOLUTE, "ROL 4");
     return clockCycles;
     }
     public static int rol_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         if (ArgsHandler.debug) 
             Debug.printASM(ROL_ABSOLUTE_X, "ROL 5");
     return clockCycles;
@@ -1372,31 +1486,31 @@ public class Instructions {
 
 
     public static int ror() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         if (ArgsHandler.debug) 
             Debug.printASM(ROR, "ROR");
     return clockCycles;
     }
     public static int ror_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug) 
             Debug.printASM(ROR_ZERO_PAGE, "ROR");
     return clockCycles;
     }
     public static int ror_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(ROR_ZERO_PAGE_X, "ROR");
     return clockCycles;
     }
     public static int ror_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(ROR_ABSOLUTE, "ROR");
     return clockCycles;
     }
     public static int ror_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         if (ArgsHandler.debug) 
             Debug.printASM(ROR_ABSOLUTE_X, "ROR");
     return clockCycles;
@@ -1406,7 +1520,7 @@ public class Instructions {
      * Return from interrupt
      */
     public static int rti() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
         // Fetch address off the stack
         Registers.sp++;
@@ -1437,7 +1551,7 @@ public class Instructions {
         Registers.sp--;
      */
     public static int rts() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
         // Fetch address off the stack
         Registers.sp++;
@@ -1457,7 +1571,7 @@ public class Instructions {
      * Two's compliment subtraction
      */
     public static int sbc() {
-        int clockCycles = 0;
+        int clockCycles = 2;
         Registers.pc++;
         byte value = Cpu.fetchNextValue();
         int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
@@ -1494,7 +1608,7 @@ public class Instructions {
 
     }
     public static int sbc_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
         int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
@@ -1531,13 +1645,13 @@ public class Instructions {
 
     }
     public static int sbc_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(SBC_ZERO_PAGE_X, "SBC 2");
     return clockCycles;
     }
     public static int sbc_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
 
         short address = fetchAddress();
         byte value = Ram.read(address);
@@ -1576,25 +1690,34 @@ public class Instructions {
 
     }
     public static int sbc_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(SBC_ABSOLUTE_X, "SBC 4");
     return clockCycles;
     }
     public static int sbc_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(SBC_ABSOLUTE_Y, "SBC 5");
     return clockCycles;
     }
     public static int sbc_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(SBC_X_IND, "SBC 6");
     return clockCycles;
     }
     public static int sbc_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug) 
             Debug.printASM(SBC_IND_Y, "SBC 7");
     return clockCycles;
@@ -1605,14 +1728,14 @@ public class Instructions {
      * Shift right XOR
      */
     public static int sre_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 8;
         if (ArgsHandler.debug)
             Debug.printASM(SRE_X_IND, "SRE 1");
     return clockCycles;
     }
     
     public static int sre_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
 
         byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
@@ -1629,35 +1752,35 @@ public class Instructions {
     }
     
     public static int sre_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ABSOLUTE, "SRE3 ");
     return clockCycles;
     }
     
     public static int sre_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 8;
         if (ArgsHandler.debug)
             Debug.printASM(SRE_IND_Y, "SRE4");
     return clockCycles;
     }
     
     public static int sre_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ZERO_PAGE_X, "SRE5");
     return clockCycles;
     }
     
     public static int sre_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ABSOLUTE_Y, "SRE6");
     return clockCycles;
     }
     
     public static int sre_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ABSOLUTE_X, "SRE7");
     return clockCycles;
@@ -1668,7 +1791,7 @@ public class Instructions {
      * Set carry flag
      */
     public static int sec() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.setCarryFlag(true);
 
@@ -1681,7 +1804,7 @@ public class Instructions {
      * Set Decimal flag
      */
     public static int sed() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.setDecimalFlag(true);
 
@@ -1694,7 +1817,7 @@ public class Instructions {
      * Set interrupt disable status
      */
     public static int sei() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         
         Registers.setInterruptFlag(true);
 
@@ -1708,19 +1831,19 @@ public class Instructions {
      * 
      */
     public static int sta_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(STA_ZERO_PAGE, "STA 1");
     return clockCycles;
     }
     public static int sta_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(STA_ZERO_PAGE_X, "STA 2");
     return clockCycles;
     }
     public static int sta_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         short address = fetchAddress();
         Ram.write(address, Registers.acc);     
         System.out.printf("STA: Stored value 0x%02X at address 0x%04X%n", Registers.acc, address);
@@ -1731,7 +1854,7 @@ public class Instructions {
     }
 
     public static int sta_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         short address = fetchAbsoluteXAddress();
         Ram.write(address, Registers.acc);        
         System.out.printf("STA: Stored value 0x%02X at address 0x%04X%n", Registers.acc, address);
@@ -1741,19 +1864,19 @@ public class Instructions {
     return clockCycles;
     }
     public static int sta_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug) 
             Debug.printASM(STA_ABSOLUTE_Y, "STA 5");
     return clockCycles;
     }
     public static int sta_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(STA_X_IND, "STA 6");
     return clockCycles;
     }
     public static int sta_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(STA_IND_Y, "STA 7");
     return clockCycles;
@@ -1763,14 +1886,14 @@ public class Instructions {
      * 
      */
     public static int stx_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
             Debug.printASM(STX_ZERO_PAGE, "STX");
     return clockCycles;
     }
 
     public static int stx_zero_page_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(STX_ZERO_PAGE_Y, "STX");
     return clockCycles;
@@ -1780,7 +1903,7 @@ public class Instructions {
      * Store X Register. 
      */
     public static int stx_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
 
         // Get the address 
         short address = fetchAddress();
@@ -1794,19 +1917,19 @@ public class Instructions {
     }
     
     public static int sty_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug) 
         Debug.printASM(STY_ZERO_PAGE, "STY");
     return clockCycles;
     }
     public static int sty_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(STY_ZERO_PAGE_X, "STY");
     return clockCycles;
     }
     public static int sty_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug) 
             Debug.printASM(STY_ABSOLUTE, "STY");
     return clockCycles;
@@ -1816,7 +1939,7 @@ public class Instructions {
      * Transfer Accumulator to X
      */
     public static int tax() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.x = Registers.acc;
         
@@ -1832,7 +1955,7 @@ public class Instructions {
      * Transfer accumulator to Y
      */
     public static int tay() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         Registers.y = Registers.acc;
 
         Registers.setZeroFlag(Registers.y==0);
@@ -1847,7 +1970,7 @@ public class Instructions {
      * Transfer X to stack pointer
      */
     public static int tsx() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.x = Registers.sp;
 
@@ -1863,7 +1986,7 @@ public class Instructions {
      * Transfer X to accumulator 
      */
     public static int txa() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.acc = Registers.x;
         
@@ -1879,7 +2002,7 @@ public class Instructions {
      * Transfer the stack pointer to X
      */
     public static int txs() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.sp = Registers.x;
 
@@ -1892,7 +2015,7 @@ public class Instructions {
      * Transfer Y to accumulator
      */
     public static int tya() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
         Registers.acc = Registers.y;
 
@@ -1908,7 +2031,7 @@ public class Instructions {
      * 
      */
     public static int rla_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         byte address = fetchZeroPageAddress();
         byte value = Ram.read(address);
 
@@ -1931,7 +2054,7 @@ public class Instructions {
     }
     
     public static int rla_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         byte address = fetchZeroPageXAddress();
         byte value = Ram.read(address);
 
@@ -1954,7 +2077,7 @@ public class Instructions {
     }
     
     public static int rla_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         short address = fetchAddress();
         byte value = Ram.read(address);
 
@@ -1977,7 +2100,7 @@ public class Instructions {
     }
     
     public static int rla_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         short address = fetchAbsoluteXAddress();
         byte value = Ram.read(address);
 
@@ -2000,7 +2123,7 @@ public class Instructions {
     }
     
     public static int rla_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         short address = fetchAbsoluteYAddress();
         byte value = Ram.read(address);
 
@@ -2023,7 +2146,7 @@ public class Instructions {
     }
     
     public static int rla_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 8;
         short address = fetchXindAddress();
         byte value = Ram.read(address);
 
@@ -2046,7 +2169,7 @@ public class Instructions {
     }
     
     public static int rla_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 8;
         short address = fetchIndYAddress();
         byte value = Ram.read(address);
 
@@ -2123,7 +2246,7 @@ public class Instructions {
      * Combination between ASL and ORA
      */
     public static int slo_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         // Get the address parts zero page wrap around
         byte address = fetchZeroPageAddress();
     
@@ -2148,7 +2271,7 @@ public class Instructions {
     }
 
     public static int slo_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         // Get the address parts zero page wrap around
         byte address = fetchZeroPageXAddress();
         
@@ -2172,7 +2295,7 @@ public class Instructions {
     }
     
     public static int slo_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ABSOLUTE, "SLO3");
     return clockCycles;
@@ -2182,7 +2305,7 @@ public class Instructions {
      * 
      */
     public static int slo_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
 
 
         if (ArgsHandler.debug) 
@@ -2191,7 +2314,7 @@ public class Instructions {
     }
     
     public static int slo_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_ABSOLUTE_Y, "SLO5");
     return clockCycles;
@@ -2201,7 +2324,7 @@ public class Instructions {
      * ASL + ORA
      */
     public static int slo_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 8;
 
         short address = fetchAddress();
         address += Registers.x;
@@ -2220,42 +2343,48 @@ public class Instructions {
     }
     
     public static int slo_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 8;
         if (ArgsHandler.debug) 
             Debug.printASM(SLO_IND_Y, "SLO7");
     return clockCycles;
     }
 
     public static int lax_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         if (ArgsHandler.debug)
             Debug.printASM(LAX_ZERO_PAGE, "LAX");
     return clockCycles;
     }
     
     public static int lax_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug)
             Debug.printASM(LAX_ABSOLUTE, "LAX");
     return clockCycles;
     }
     
     public static int lax_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug)
             Debug.printASM(LAX_IND_Y, "LAX");
     return clockCycles;
     }
     
     public static int lax_zero_page_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug)
             Debug.printASM(LAX_ZERO_PAGE_Y, "LAX");
     return clockCycles;
     }
     
     public static int lax_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+    clockCycles += pageCrossed;
+
         if (ArgsHandler.debug)
             Debug.printASM(LAX_ABSOLUTE_Y, "LAX");
     return clockCycles;
@@ -2269,37 +2398,37 @@ public class Instructions {
 
 
     public static int dcp_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 8;
 
     return clockCycles;
     }  
     public static int dcp_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
 
     return clockCycles;
     }  
     public static int dcp_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
     return clockCycles;
     }  
     public static int dcp_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 8;
 
     return clockCycles;
     }  
     public static int dcp_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
     return clockCycles;
     }  
     public static int dcp_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 7;
 
     return clockCycles;
     }  
     public static int dcp_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
 
     return clockCycles;
     }  
@@ -2309,7 +2438,7 @@ public class Instructions {
      *  ACC and X
      */
     public static int sax_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
         byte address = fetchZeroPageAddress();
         byte value = (byte) (Registers.acc & Registers.x);
         Ram.write(address, value);
@@ -2319,20 +2448,20 @@ public class Instructions {
     }
     
     public static int sax_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug)
             Debug.printASM(SAX_ABSOLUTE, "SAX 2");
     return clockCycles;
     }
     
     public static int sax_zero_page_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         if (ArgsHandler.debug)
             Debug.printASM(SAX_ZERO_PAGE_Y, "SAX 3");
     return clockCycles;
     }
     public static int sax_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
     return clockCycles;
     }
@@ -2344,21 +2473,23 @@ public class Instructions {
     }
     
     public static int shy_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug)
             Debug.printASM(SHY_ABSOLUTE_X, "SHY");
     return clockCycles;
     }
     
     public static int shx_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         if (ArgsHandler.debug)
             Debug.printASM(SHX_ABSOLUTE_Y, "SHX");
     return clockCycles;
     }
 
     public static int las_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 4;
+
+    clockCycles += pageCrossed;
 
     return clockCycles;
     }
@@ -2377,25 +2508,28 @@ public class Instructions {
 
 
     public static int nop_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 3;
 
     return clockCycles;
     }
 
     public static int nop_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         
     return clockCycles;
     }
 
     public static int nop_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         
     return clockCycles;
     }
     public static int nop_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 4;
         
+
+    clockCycles += pageCrossed;
+
     return clockCycles;
     }
 
@@ -2405,29 +2539,29 @@ public class Instructions {
     return clockCycles;
     }
     public static int anc() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         
     return clockCycles;
     }
     public static int alr() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         
     return clockCycles;
     }
     public static int arr() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
     return clockCycles;
     }
 
     public static int ane() {
-    int clockCycles = 0;
+    int clockCycles = 2;
         
     return clockCycles;
     }
 
     public static int sha_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 6;
 
     return clockCycles;
     }
@@ -2439,61 +2573,61 @@ public class Instructions {
     }
     
     public static int sha_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 5;
 
     return clockCycles;
     }
 
     public static int lxa() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
     return clockCycles;
     }
 
     public static int sbx() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
     return clockCycles;
     }
 
     public static int isc_x_ind() {
-    int clockCycles = 0;
+    int clockCycles = 8;
         
     return clockCycles;
     }
     public static int isc_zero_page() {
-    int clockCycles = 0;
+    int clockCycles = 5;
         
     return clockCycles;
     }
     public static int isc_absolute() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         
     return clockCycles;
     }
     public static int isc_ind_y() {
-    int clockCycles = 0;
+    int clockCycles = 8;
         
     return clockCycles;
     }
     public static int isc_zero_page_x() {
-    int clockCycles = 0;
+    int clockCycles = 6;
         
     return clockCycles;
     }
     public static int isc_absolute_y() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         
     return clockCycles;
     }
     public static int isc_absolute_x() {
-    int clockCycles = 0;
+    int clockCycles = 7;
         
     return clockCycles;
     }
 
     public static int usbc() {
-    int clockCycles = 0;
+    int clockCycles = 2;
 
     return clockCycles;
     }
@@ -2543,17 +2677,25 @@ public class Instructions {
         return zero_page_address;    
     }
 
-    private static short fetchAddress() {
+    private static short fetchAddress() {        
+        short currentAddress = Registers.pc;
+
         // Get the address parts
         Registers.pc++;
         byte lowerByte = (byte) (Cpu.fetchNextValue());
         Registers.pc++; 
         byte higherByte = (byte) (Cpu.fetchNextValue());
-
+        
         // Convert them to little endian
         short address = (short) ((higherByte << 8) | lowerByte);
         
+        pageCrossed = ((currentAddress & 0xFF00) != (address & 0xFF00)) ? 1 : 0;
+
         return address;
+    }
+
+    public static void resetPageCrossed() {
+        pageCrossed = 0;
     }
 
 }

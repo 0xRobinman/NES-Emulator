@@ -315,6 +315,8 @@ public class Cpu {
 
         Registers.pc++;
 
+        Instructions.resetPageCrossed();
+
         return clockCycles;
     }
 

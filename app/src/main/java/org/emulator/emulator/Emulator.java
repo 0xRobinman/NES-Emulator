@@ -20,7 +20,7 @@ import org.emulator.ppu.Ppu;
 
 public class Emulator {
 
-    private final static long FRAME_TIME = 1000 / 60;
+    private final static long FRAME_TIME = 1_000_000_000L / 60;
     private boolean verbose = false;
 
     public Emulator() {}
@@ -149,20 +149,21 @@ public class Emulator {
         }
     }
 
+
     private void synchroniseTiming(long startTime, long endTime) {
 
         long timeElapsed = endTime - startTime;
+        long restOfFrameTime = FRAME_TIME - timeElapsed;
     
-        if (timeElapsed < FRAME_TIME) { 
-            long restOfFrameTime = FRAME_TIME - timeElapsed;
+        if (restOfFrameTime >= 1_000_000) { 
             try {
-                Thread.sleep(restOfFrameTime);
+                Thread.sleep(restOfFrameTime / 1_000_000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
-
+    
     public void startEmulator() {
         File inputFile;
         if ((inputFile = getInputFile()) == null) 
@@ -186,15 +187,17 @@ public class Emulator {
         
         // Start Emulator
         while(true) {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
+
             int clockCycles = cpu.executeCycle();
+
             for (int i = 0; i < clockCycles * 3; i++)
                 ppu.repaint();
             
             for (int i = 0; i < clockCycles; i++)
                 apu.tick();
             
-            long endTime = System.currentTimeMillis();
+            long endTime = System.nanoTime();
             synchroniseTiming(startTime, endTime);
         }
     }
