@@ -36,6 +36,7 @@ public class Memory {
         
     private static byte [] vRam = new byte[0x3FFF];
 
+    private static short attributeBase = 0x2000 + 0x03C0;
 
 
     public static byte readPatternMemory(short offset) {
@@ -76,6 +77,10 @@ public class Memory {
 
     public static byte readNameTable(short offset) {
         return Ram.read((short)(NAME_TABLE_0_START + offset));
+    }
+
+    public static byte readAttribute(short offset) {
+        return Ram.read((short)(attributeBase + offset));
     }
 
     public static byte[] getVRAM() {

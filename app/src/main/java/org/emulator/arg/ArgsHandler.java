@@ -6,7 +6,7 @@ package org.emulator.arg;
  */
 public class ArgsHandler {
 
-    private boolean verbose = true;
+    private boolean verbose = false;
     
     public static boolean debug = true;
 
