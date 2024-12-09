@@ -1,5 +1,6 @@
 package org.emulator.emulator;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,8 +21,8 @@ import org.emulator.ppu.Ppu;
 
 public class Emulator {
 
-    private final static long FRAME_TIME = 1_000_000_000L / 60;
     private boolean verbose = false;
+    private static final int FPS = 10000, TARGET_TIME = 1000 / FPS;
 
     public Emulator() {}
     
@@ -152,12 +153,14 @@ public class Emulator {
 
     private void synchroniseTiming(long startTime, long endTime) {
 
-        long timeElapsed = endTime - startTime;
-        long restOfFrameTime = FRAME_TIME - timeElapsed;
+        long timeElapsed = (endTime - startTime) / 1000000;
+        long restOfFrameTime = TARGET_TIME - timeElapsed;
     
-        if (restOfFrameTime >= 1_000_000) { 
+        if (restOfFrameTime > 0) { 
             try {
-                Thread.sleep(restOfFrameTime / 1_000_000);
+                
+                Thread.sleep(restOfFrameTime);
+                System.out.println("sleep");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -180,23 +183,29 @@ public class Emulator {
         // Start graphics processing
         Ppu ppu = new Ppu();
         window.add(ppu);
+        ppu.setPreferredSize(new Dimension(768, 720));
+        ppu.setVisible(true);
+        ppu.setFocusable(false);
+        window.pack();
         window.setVisible(true);
+
+        ppu.init();
 
         // Create new audio processing unit
         Apu apu = new Apu();
-        
+
         // Start Emulator
         while(true) {
             long startTime = System.nanoTime();
-
             int clockCycles = cpu.executeCycle();
-
-            for (int i = 0; i < clockCycles * 3; i++)
-                ppu.repaint();
             
+            for (int i = 0; i < clockCycles * 3; i++)
+                ppu.ppuTick();
+
             for (int i = 0; i < clockCycles; i++)
                 apu.tick();
-            
+        
+            ppu.update();
             long endTime = System.nanoTime();
             synchroniseTiming(startTime, endTime);
         }

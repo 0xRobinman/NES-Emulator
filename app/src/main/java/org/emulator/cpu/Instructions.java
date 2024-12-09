@@ -526,7 +526,6 @@ public class Instructions {
         short address = fetchAddress();
 
         byte testValue = Ram.read(address);
-        System.out.printf("Memory Read: Address = $%04X%n", address);
 
         Registers.setZeroFlag((testValue & Registers.acc) == 0);
         Registers.setNegativeFlag((testValue & 0x80) != 0);
@@ -1846,7 +1845,6 @@ public class Instructions {
     int clockCycles = 4;
         short address = fetchAddress();
         Ram.write(address, Registers.acc);     
-        System.out.printf("STA: Stored value 0x%02X at address 0x%04X%n", Registers.acc, address);
 
         if (ArgsHandler.debug) 
             Debug.printASM(STA_ABSOLUTE, "STA 3");
@@ -1857,7 +1855,6 @@ public class Instructions {
     int clockCycles = 5;
         short address = fetchAbsoluteXAddress();
         Ram.write(address, Registers.acc);        
-        System.out.printf("STA: Stored value 0x%02X at address 0x%04X%n", Registers.acc, address);
 
         if (ArgsHandler.debug) 
             Debug.printASM(STA_ABSOLUTE_X, "STA 4");
