@@ -7,10 +7,10 @@ package org.emulator.arg;
 public class ArgsHandler {
 
     private boolean verbose = false;
-    
-    public static boolean debug = false;
 
-    public ArgsHandler(String [] args) {
+    public static boolean debug = true;
+
+    public ArgsHandler(String[] args) {
         for (String arg : args) {
             switch (arg) {
                 case "-v" -> verbose = true;
@@ -18,7 +18,6 @@ public class ArgsHandler {
             }
         }
     }
-    
 
     private void printHelp() {
 
@@ -27,7 +26,7 @@ public class ArgsHandler {
         System.out.println(" | . ` |/ _ \\/ __| |  __| | '_ ` _ \\| | | | |/ _` | __/ _ \\| '__|");
         System.out.println(" | |\\  |  __/\\__ \\ | |____| | | | | | |_| | | (_| | || (_) | |   ");
         System.out.println(" |_| \\_|\\___||___/ |______|_| |_| |_|\\__,_|_|\\__,_|\\__\\___/|_|   ");
-        
+
         System.out.println("#################################################################");
 
         System.out.println("Usage\n\tjava Emulator <args>\n");
@@ -44,4 +43,4 @@ public class ArgsHandler {
         return verbose;
     }
 
-}   
+}

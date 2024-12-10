@@ -15,7 +15,7 @@ public class Ppu {
     private static final int SPRITE_START = 257;
     private static final int SPRITE_END = 230;
     private static final int VBLANK_START = 241;
-    private static final int VBLANK_END = 262;
+    private static final int VBLANK_END = 261;
     private static final int SCREEN_HEIGHT = 240;
     private static final int SCREEN_WIDTH = 256;
     
@@ -97,15 +97,17 @@ public class Ppu {
         return paletteIndex;
     }
 
-
+    /**
+     * Everything performed on a PPU tick
+     */
     public void ppuTick() {
 
         // Clear VBLank
-        if (line == 261 && cycle == 1) 
+        if (line == VBLANK_END && cycle == CYCLE_START) 
             Registers.setVBlank(false);
         
         // Set VBlank
-        if (line == 241 && cycle == 1)
+        if (line == VBLANK_START && cycle == CYCLE_START)
             Registers.setVBlank(true);
         
         // Render visible scanlines
@@ -147,6 +149,9 @@ public class Ppu {
         
     }
 
+    /**
+     * Determine if the whole canvas has rendered or not.
+     */
     public boolean polFrame() {
         if (frameComplete) {
             frameComplete = false;
