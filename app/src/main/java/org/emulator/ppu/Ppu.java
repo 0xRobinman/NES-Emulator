@@ -1,24 +1,22 @@
 package org.emulator.ppu;
 
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-
-import javax.swing.JPanel;
 
 /**
  * Picture processing unit
  */
-public class Ppu extends JPanel {
-    private static final int LINES = 262;
-    private static final int CYCLES = 341;
+public class Ppu {
+    private static final int MAX_LINES = 262;
+    private static final int MAX_CYCLES = 341;
+    private static final int CYCLE_START = 1;
     private static final int VISIBLE_LINE_START = 0;
-    private static final int VISIBLE_LINE_END = 240;
-    private static final int SPRITE_START = 256;
-    private static final int SPRITE_END = 240;
+    private static final int VISIBLE_LINE_END = 239;
+    private static final int SPRITE_START = 257;
+    private static final int SPRITE_END = 230;
     private static final int VBLANK_START = 241;
     private static final int VBLANK_END = 262;
-    private static final int SCREEN_HEIGHT = 240; // NES resolution height
+    private static final int SCREEN_HEIGHT = 240;
     private static final int SCREEN_WIDTH = 256;
     
     private static final int[] COLOUR_PALLETTE = {
@@ -34,16 +32,14 @@ public class Ppu extends JPanel {
 
     private int[] screenBuffer;
     private BufferedImage screen;
-    private int cycle = 0, line = 0, frame = 0;
-    private Graphics2D g;
-    public Ppu() {  
-    }
-
-    public void init() {
-        screen = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
-        g = (Graphics2D) screen.getGraphics();
+    private int cycle = 0, line = 0;
+    private boolean frameComplete = false;
+    
+    public Ppu(BufferedImage image) {  
+        screen = image;
         screenBuffer = new int[SCREEN_WIDTH * SCREEN_HEIGHT];
     }
+    
 
     private void setPixel(int x, int y, int colour) {
         screenBuffer[y * SCREEN_WIDTH + x] = colour;
@@ -77,7 +73,6 @@ public class Ppu extends JPanel {
         // Get tile
         int tile = fetchTile(x, y);
         int attribute = fetchAttribute(x, y);
-        int colourIndex = 0;
 
         int offset = tile * 16;
         int tileYOffset = y % 8, tileXOffset = x % 8;
@@ -114,7 +109,7 @@ public class Ppu extends JPanel {
             Registers.setVBlank(true);
         
         // Render visible scanlines
-        if (line >= 0 && line <= 239 && cycle >= 1 && cycle <= 256) {
+        if (line >= VISIBLE_LINE_START && line <= VISIBLE_LINE_END && cycle >= CYCLE_START && cycle <= SCREEN_WIDTH) {
             // Render pixel
             int x = cycle - 1, y = line;
 
@@ -125,12 +120,12 @@ public class Ppu extends JPanel {
         }
 
         // Render visible region
-        if (cycle >= 1 && cycle <= 256) {
+        if (cycle >= CYCLE_START && cycle <= SCREEN_WIDTH) {
 
         }
 
         // Handle sprites
-        if (cycle >= 257 && cycle <= 320) {
+        if (cycle >= SPRITE_START && cycle <= SPRITE_END) {
 
         }
 
@@ -140,24 +135,30 @@ public class Ppu extends JPanel {
         }
 
         cycle++;
-        if (cycle == 341) {
-
+        if (cycle == MAX_CYCLES) {
             cycle = 0;
             line++;
-            if (line == 262) {
+            if (line == MAX_LINES) {
                 line = 0;
-                frame++;
+                frameComplete = true;
                 screen.setRGB(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, screenBuffer, 0, 256);
             }
         }
         
     }
 
-    public void update()
-    {
-        Graphics g2 = this.getGraphics();
-        g2.drawImage(screen, 0, 0, getWidth(), getHeight(), null);
-        g2.dispose();
+    public boolean polFrame() {
+        if (frameComplete) {
+            frameComplete = false;
+            
+            return true;
+        }
+        return false;
+    }
+
+    protected void paintComponent(Graphics g) {
+        if (screen != null)
+            g.drawImage(screen, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
     }
 
 }
