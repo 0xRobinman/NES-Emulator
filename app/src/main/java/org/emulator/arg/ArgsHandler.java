@@ -8,7 +8,7 @@ public class ArgsHandler {
 
     private boolean verbose = false;
     
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     public ArgsHandler(String [] args) {
         for (String arg : args) {

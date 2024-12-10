@@ -1,6 +1,10 @@
 package org.emulator.emulator;
 
+import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,10 +23,17 @@ import org.emulator.memory.Ram;
 import org.emulator.ppu.Ppu;
 
 
-public class Emulator {
+public class Emulator implements Runnable {
 
     private boolean verbose = false;
-    private static final int FPS = 10000, TARGET_TIME = 1000 / FPS;
+    private BufferedImage image;
+    private Canvas gameCanvas;
+    private Graphics g;
+    private BufferStrategy bs;
+    private final int FPS = 60;
+    private final double FRAME_INTERVAL = 1.0 / FPS;
+    private final static int WINDOW_WIDTH = 768, WINDOW_HEIGHT = 720;
+
 
     public Emulator() {}
     
@@ -30,17 +41,24 @@ public class Emulator {
         this.verbose = argsHandler.getVerbose();
     }
     
-    private JFrame createWindow() {
-        JFrame window;
-        window = new JFrame("NES Emulator");
-        window.setSize(768, 720);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setResizable(false);
-        window.setLocationRelativeTo(null);
-        return window;
+
+    private Canvas createCanvas() {
+        Canvas canvas = new Canvas();
+        canvas.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        return canvas;
     }
 
-    
+    private void createGameWindow() {
+        image = new BufferedImage(256, 240, BufferedImage.TYPE_INT_RGB);
+        gameCanvas = createCanvas();
+        JFrame window = new JFrame("NES Emulator");
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.add(gameCanvas);
+        window.pack();
+        window.setLocationRelativeTo(null);
+        window.setResizable(true);
+        window.setVisible(true);
+    }
 
     private File getInputFile() {
         JFileChooser j = new JFileChooser("");
@@ -136,85 +154,104 @@ public class Emulator {
         try (InputStream inputStream = new FileInputStream(inputFile)) {
             
             parseHeader(inputStream);
-
-            int data;
-            while ((data = inputStream.read()) != -1) {
-                // Process the read data
-                //System.out.print(data);
-            }
+            while (inputStream.read() != -1)
+                ;
             inputStream.close();
         } 
-
         catch (FileNotFoundException e) {
         } catch (IOException e) {
         }
     }
-
-
-    private void synchroniseTiming(long startTime, long endTime) {
-
-        long timeElapsed = (endTime - startTime) / 1000000;
-        long restOfFrameTime = TARGET_TIME - timeElapsed;
     
-        if (restOfFrameTime > 0) { 
-            try {
-                
-                Thread.sleep(restOfFrameTime);
-                System.out.println("sleep");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public void startEmulator() {
+    @Override
+    public void run() {
         File inputFile;
         if ((inputFile = getInputFile()) == null) 
             return;
         
-        JFrame window = createWindow();
+        createGameWindow();
         
+        gameCanvas.createBufferStrategy(2);
+        bs = gameCanvas.getBufferStrategy();
+
         // Handle the input file and load game into memory
         loadIntoMemory(inputFile);
 
         Cpu cpu = new Cpu();
-        cpu.readResetVector();
-
-        // Start graphics processing
-        Ppu ppu = new Ppu();
-        window.add(ppu);
-        ppu.setPreferredSize(new Dimension(768, 720));
-        ppu.setVisible(true);
-        ppu.setFocusable(false);
-        window.pack();
-        window.setVisible(true);
-
-        ppu.init();
-
-        // Create new audio processing unit
+        Ppu ppu = new Ppu(image);
         Apu apu = new Apu();
 
-        // Start Emulator
-        while(true) {
-            long startTime = System.nanoTime();
-            int clockCycles = cpu.executeCycle();
-            
-            for (int i = 0; i < clockCycles * 3; i++)
-                ppu.ppuTick();
+        nesGameLoop(cpu, ppu, apu);
+    
+    }   
 
-            for (int i = 0; i < clockCycles; i++)
-                apu.tick();
+    /**
+     * 60FPS Game loop
+     */
+    @SuppressWarnings("empty-statement")
+    private void nesGameLoop(Cpu cpu, Ppu ppu, Apu apu) {
+
+        cpu.readResetVector();
+
+        boolean dropFrame = false;
+        double currentTime = 0, previousTime = System.nanoTime() / 1e9, deltaTime = 0, accumulatedTime = 0;
         
-            ppu.update();
-            long endTime = System.nanoTime();
-            synchroniseTiming(startTime, endTime);
+        while(true) 
+        {
+            
+            currentTime = System.nanoTime() / 1e9;
+            deltaTime = currentTime - previousTime;
+            previousTime = currentTime;
+            accumulatedTime += deltaTime;
+                                   
+            for (dropFrame = !(accumulatedTime >= FRAME_INTERVAL); !dropFrame && accumulatedTime >= FRAME_INTERVAL; accumulatedTime -= FRAME_INTERVAL)
+                ;
+
+            handleFrame(cpu, ppu, apu, dropFrame);
         }
     }
 
-    public static void main(String[] args) {
+
+
+    private void easeUsage() {
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) { }
+    }
+
+    private void handleFrame(Cpu cpu, Ppu ppu, Apu apu, boolean dropFrame) {
+        if (!dropFrame)  
+            renderFrame(cpu, ppu, apu);
+        else
+            easeUsage();
+    }
+
+    private void renderFrame(Cpu cpu, Ppu ppu, Apu apu) {
+        while (!ppu.polFrame()) {
+            executeTicks(cpu, ppu, apu);
+        }
+        update();
+    }
+
+    private void executeTicks(Cpu cpu, Ppu ppu, Apu apu)
+    {
+        int clockCycles = cpu.executeCycle();
+        for (int i = 0; i < clockCycles * 3; i++)       // For each CPU tick, 3 PPU ticks occur
+            ppu.ppuTick();
+        for (int i = 0; i < clockCycles; i++)
+            apu.tick();       
+    }
+    public void update() 
+    {
+        g = bs.getDrawGraphics();
+        g.drawImage(image, 0, 0, gameCanvas.getWidth(), gameCanvas.getHeight(), null);
+        bs.show();
+    }
+    public static void main(String[] args) 
+    {
         ArgsHandler arguments = new ArgsHandler(args);
         Emulator emulator = new Emulator(arguments);
-        emulator.startEmulator();
-
+        Thread emulatorThread = new Thread(emulator);
+        emulatorThread.start();
     }
 }
