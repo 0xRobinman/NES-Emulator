@@ -2223,6 +2223,19 @@ public class Instructions {
      */
     public static int rol() {
         int clockCycles = 2;
+
+        Registers.pc++;
+        byte value = Cpu.fetchNextValue();
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value << 1) | (carry));
+        Registers.acc = value;
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROL, "ROL 1");
         return clockCycles;
@@ -2230,6 +2243,19 @@ public class Instructions {
 
     public static int rol_zero_page() {
         int clockCycles = 5;
+
+        byte address = fetchZeroPageAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value << 1) | (carry));
+        Ram.write(address, value);
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROL_ZERO_PAGE, "ROL 2");
         return clockCycles;
@@ -2237,6 +2263,19 @@ public class Instructions {
 
     public static int rol_zero_page_x() {
         int clockCycles = 6;
+
+        byte address = fetchZeroPageXAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value << 1) | (carry));
+        Ram.write(address, value);
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROL_ZERO_PAGE_X, "ROL 3");
         return clockCycles;
@@ -2244,6 +2283,19 @@ public class Instructions {
 
     public static int rol_absolute() {
         int clockCycles = 6;
+
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value << 1) | (carry));
+        Ram.write(address, value);
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROL_ABSOLUTE, "ROL 4");
         return clockCycles;
@@ -2251,6 +2303,19 @@ public class Instructions {
 
     public static int rol_absolute_x() {
         int clockCycles = 7;
+
+        short address = fetchAbsoluteXAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value << 1) | (carry));
+        Ram.write(address, value);
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROL_ABSOLUTE_X, "ROL 5");
         return clockCycles;
@@ -2261,6 +2326,19 @@ public class Instructions {
      */
     public static int ror() {
         int clockCycles = 2;
+
+        Registers.pc++;
+        byte value = Cpu.fetchNextValue();
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value >> 1) | (carry));
+        Registers.acc = value;
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROR, "ROR");
         return clockCycles;
@@ -2268,6 +2346,19 @@ public class Instructions {
 
     public static int ror_zero_page() {
         int clockCycles = 5;
+
+        byte address = fetchZeroPageAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value >> 1) | (carry));
+        Registers.acc = value;
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROR_ZERO_PAGE, "ROR");
         return clockCycles;
@@ -2275,6 +2366,19 @@ public class Instructions {
 
     public static int ror_zero_page_x() {
         int clockCycles = 6;
+
+        byte address = fetchZeroPageXAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value >> 1) | (carry));
+        Registers.acc = value;
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROR_ZERO_PAGE_X, "ROR");
         return clockCycles;
@@ -2282,6 +2386,19 @@ public class Instructions {
 
     public static int ror_absolute() {
         int clockCycles = 6;
+
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value >> 1) | (carry));
+        Registers.acc = value;
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROR_ABSOLUTE, "ROR");
         return clockCycles;
@@ -2289,6 +2406,19 @@ public class Instructions {
 
     public static int ror_absolute_x() {
         int clockCycles = 7;
+
+        short address = fetchAbsoluteXAddress();
+        byte value = Ram.read(address);
+        boolean mostSignificantBit = (value & 0x80) != 0;
+
+        int carry = ((Registers.status & Registers.CARRY_MASK) != 0) ? 1 : 0;
+        value = (byte) ((value >> 1) | (carry));
+        Registers.acc = value;
+
+        Registers.setCarryFlag(mostSignificantBit);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(ROR_ABSOLUTE_X, "ROR");
         return clockCycles;
@@ -2426,6 +2556,36 @@ public class Instructions {
 
     public static int sbc_zero_page_x() {
         int clockCycles = 4;
+
+        byte address = fetchZeroPageXAddress();
+        byte value = Ram.read(address);
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte) ((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte) (~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
+
         if (ArgsHandler.debug)
             Debug.printASM(SBC_ZERO_PAGE_X, "SBC 2");
         return clockCycles;
@@ -2473,6 +2633,35 @@ public class Instructions {
     public static int sbc_absolute_x() {
         int clockCycles = 4;
 
+        short address = fetchAbsoluteXAddress();
+        byte value = Ram.read(address);
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte) ((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte) (~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
+
         clockCycles += pageCrossed;
 
         if (ArgsHandler.debug)
@@ -2483,6 +2672,35 @@ public class Instructions {
     public static int sbc_absolute_y() {
         int clockCycles = 4;
 
+        short address = fetchAbsoluteYAddress();
+        byte value = Ram.read(address);
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte) ((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte) (~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
+
         clockCycles += pageCrossed;
 
         if (ArgsHandler.debug)
@@ -2492,6 +2710,36 @@ public class Instructions {
 
     public static int sbc_x_ind() {
         int clockCycles = 6;
+
+        short address = fetchXindAddress();
+        byte value = Ram.read(address);
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte) ((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte) (~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
+
         if (ArgsHandler.debug)
             Debug.printASM(SBC_X_IND, "SBC 6");
         return clockCycles;
@@ -2499,6 +2747,35 @@ public class Instructions {
 
     public static int sbc_ind_y() {
         int clockCycles = 5;
+
+        short address = fetchIndYAddress();
+        byte value = Ram.read(address);
+        int carry = (Registers.status & Registers.CARRY_MASK) != 0 ? 1 : 0;
+        int temp_acc = Registers.acc;
+
+        if ((Registers.status & Registers.DECIMAL_MASK) == Registers.DECIMAL_MASK) {
+            int lowerNibble = (Registers.acc & 0x0F) - (value & 0x0F) - (1 - carry);
+            if (lowerNibble < 0) {
+                lowerNibble += 10;
+                Registers.acc -= 0x10;
+            }
+            int higherNibble = (Registers.acc >> 4) - (value >> 4);
+            if (higherNibble < 0) {
+                higherNibble += 10;
+                Registers.status &= ~Registers.CARRY_MASK; // Clear carry (borrow occurred)
+            } else {
+                Registers.status |= Registers.CARRY_MASK; // Set carry (no borrow)
+            }
+            Registers.acc = (byte) ((higherNibble << 4) | (lowerNibble & 0x0F));
+        } else {
+            value = (byte) (~value);
+            Registers.acc += value + (carry);
+
+            Registers.setCarryFlag((Registers.acc & 0xFF) >= (value & 0xFF));
+            Registers.setZeroFlag(Registers.acc == 0);
+            Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+            Registers.setOverflowFlag(((temp_acc ^ Registers.acc) & (temp_acc ^ ~value) & 0x80) != 0);
+        }
 
         clockCycles += pageCrossed;
 
@@ -2536,6 +2813,17 @@ public class Instructions {
 
     public static int sre_absolute() {
         int clockCycles = 6;
+
+        short address = fetchAddress();
+        byte value = Ram.read(address);
+        Registers.status &= (value & Registers.CARRY_MASK);
+        Registers.setCarryFlag((value & 0x01) != 0);
+        value >>>= 1;
+        Ram.write(address, value);
+        Registers.acc ^= value;
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ABSOLUTE, "SRE3 ");
         return clockCycles;
@@ -2543,6 +2831,17 @@ public class Instructions {
 
     public static int sre_ind_y() {
         int clockCycles = 8;
+
+        short address = fetchIndYAddress();
+        byte value = Ram.read(address);
+        Registers.status &= (value & Registers.CARRY_MASK);
+        Registers.setCarryFlag((value & 0x01) != 0);
+        value >>>= 1;
+        Ram.write(address, value);
+        Registers.acc ^= value;
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SRE_IND_Y, "SRE4");
         return clockCycles;
@@ -2550,6 +2849,17 @@ public class Instructions {
 
     public static int sre_zero_page_x() {
         int clockCycles = 6;
+
+        byte address = fetchZeroPageXAddress();
+        byte value = Ram.read(address);
+        Registers.status &= (value & Registers.CARRY_MASK);
+        Registers.setCarryFlag((value & 0x01) != 0);
+        value >>>= 1;
+        Ram.write(address, value);
+        Registers.acc ^= value;
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ZERO_PAGE_X, "SRE5");
         return clockCycles;
@@ -2557,6 +2867,17 @@ public class Instructions {
 
     public static int sre_absolute_y() {
         int clockCycles = 7;
+
+        short address = fetchAbsoluteYAddress();
+        byte value = Ram.read(address);
+        Registers.status &= (value & Registers.CARRY_MASK);
+        Registers.setCarryFlag((value & 0x01) != 0);
+        value >>>= 1;
+        Ram.write(address, value);
+        Registers.acc ^= value;
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ABSOLUTE_Y, "SRE6");
         return clockCycles;
@@ -2564,6 +2885,17 @@ public class Instructions {
 
     public static int sre_absolute_x() {
         int clockCycles = 7;
+
+        short address = fetchAbsoluteXAddress();
+        byte value = Ram.read(address);
+        Registers.status &= (value & Registers.CARRY_MASK);
+        Registers.setCarryFlag((value & 0x01) != 0);
+        value >>>= 1;
+        Ram.write(address, value);
+        Registers.acc ^= value;
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SRE_ABSOLUTE_X, "SRE7");
         return clockCycles;
@@ -2859,7 +3191,7 @@ public class Instructions {
     }
 
     /**
-     * 
+     * Rotate AND
      */
     public static int rla_zero_page() {
         int clockCycles = 5;
@@ -3022,6 +3354,9 @@ public class Instructions {
         return clockCycles;
     }
 
+    /**
+     * 
+     */
     public static int rra_x_ind() {
         int clockCycles = 0;
         if (ArgsHandler.debug)
@@ -3126,16 +3461,48 @@ public class Instructions {
 
     public static int slo_absolute() {
         int clockCycles = 6;
+
+        // Get the address parts zero page wrap around
+        short address = fetchAddress();
+
+        // Get value at address
+        byte value = Ram.read(address);
+        Registers.setCarryFlag((value & 0x80) != 0);
+
+        // Perform ASL on value
+        value <<= 1;
+
+        // ORA
+        Registers.acc |= value;
+
+        Ram.write(address, value);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SLO_ABSOLUTE, "SLO3");
         return clockCycles;
     }
 
-    /**
-     * 
-     */
     public static int slo_absolute_x() {
         int clockCycles = 7;
+
+        // Get the address parts zero page wrap around
+        short address = fetchAbsoluteXAddress();
+
+        // Get value at address
+        byte value = Ram.read(address);
+        Registers.setCarryFlag((value & 0x80) != 0);
+
+        // Perform ASL on value
+        value <<= 1;
+
+        // ORA
+        Registers.acc |= value;
+
+        Ram.write(address, value);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(SLO_ABSOLUTE_X, "SLO4");
@@ -3144,6 +3511,24 @@ public class Instructions {
 
     public static int slo_absolute_y() {
         int clockCycles = 7;
+
+        // Get the address parts zero page wrap around
+        short address = fetchAbsoluteYAddress();
+
+        // Get value at address
+        byte value = Ram.read(address);
+        Registers.setCarryFlag((value & 0x80) != 0);
+
+        // Perform ASL on value
+        value <<= 1;
+
+        // ORA
+        Registers.acc |= value;
+
+        Ram.write(address, value);
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SLO_ABSOLUTE_Y, "SLO5");
         return clockCycles;
@@ -3155,7 +3540,7 @@ public class Instructions {
     public static int slo_x_ind() {
         int clockCycles = 8;
 
-        short address = fetchAddress();
+        short address = fetchXindAddress();
         address += Registers.x;
 
         byte value = Ram.read(address);
@@ -3173,11 +3558,26 @@ public class Instructions {
 
     public static int slo_ind_y() {
         int clockCycles = 8;
+
+        short address = fetchIndYAddress();
+        address += Registers.x;
+
+        byte value = Ram.read(address);
+        Registers.setCarryFlag((value & Registers.CARRY_MASK) != 0);
+        value <<= 1;
+        Registers.acc = (byte) (Registers.acc | value);
+
+        Registers.setZeroFlag(Registers.acc == 0);
+        Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
+
         if (ArgsHandler.debug)
             Debug.printASM(SLO_IND_Y, "SLO7");
         return clockCycles;
     }
 
+    /**
+     * LOAD A and X
+     */
     public static int lax_zero_page() {
         int clockCycles = 3;
         if (ArgsHandler.debug)
@@ -3225,6 +3625,9 @@ public class Instructions {
         return clockCycles;
     }
 
+    /**
+     * 
+     */
     public static int dcp_x_ind() {
         int clockCycles = 8;
 
@@ -3343,25 +3746,25 @@ public class Instructions {
 
     public static int nop_zero_page() {
         int clockCycles = 3;
-
+        fetchZeroPageAddress();
         return clockCycles;
     }
 
     public static int nop_zero_page_x() {
         int clockCycles = 4;
-
+        fetchZeroPageXAddress();
         return clockCycles;
     }
 
     public static int nop_absolute() {
         int clockCycles = 4;
-
+        fetchAddress();
         return clockCycles;
     }
 
     public static int nop_absolute_x() {
         int clockCycles = 4;
-
+        fetchAbsoluteXAddress();
         clockCycles += pageCrossed;
 
         return clockCycles;
