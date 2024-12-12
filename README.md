@@ -7,7 +7,7 @@ Status: incomplete, working version by Christmas.
 ``` bash
 git clone https://github.com/0xRobinman/NES-Emulator
 cd NES-Emulator
-gradle build;
+gradle build
 gradle run
 ```
 
