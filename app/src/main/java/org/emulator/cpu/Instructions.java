@@ -5,7 +5,7 @@ import org.emulator.debug.Debug;
 import org.emulator.memory.Ram;
 
 public class Instructions {
-
+    private static boolean ignoreBRK = true;
     public static final byte BRK_IMPLIED = (byte) 0x00;
     public static final byte NOP_ZERO_PAGE = (byte) 0x04;
     public static final byte PHP_IMPLIED = (byte) 0x08;
@@ -230,6 +230,29 @@ public class Instructions {
     public static final byte ISC_ABSOLUTE_X = (byte) 0xFF;
     private static int pageCrossed = 0;
 
+    public static void nmi_interrupt() {
+
+        System.out.println("---------------------------------INTERRUPT---------------------------------");
+
+        byte higherByte = (byte) ((Registers.pc >> 8));
+        byte lowerByte = (byte) (Registers.pc);
+
+        Ram.writeToStack(Registers.sp, lowerByte);
+        Registers.sp--;
+        Ram.writeToStack(Registers.sp, higherByte);
+        Registers.sp--;
+        Ram.writeToStack(Registers.sp, Registers.status);
+        Registers.sp--;
+
+        Registers.setInterruptFlag(true);
+
+        lowerByte = Ram.read((short) 0xFFFA);
+        higherByte = Ram.read((short) 0xFFFB);
+
+        Registers.pc = (short) (lowerByte | (higherByte << 8));
+
+    }
+
     /**
      * ADD operation with carry
      */
@@ -246,9 +269,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(ADC, "ADC");
@@ -269,9 +290,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(ADC_ZERO_PAGE, "ADC");
@@ -292,9 +311,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(ADC_ZERO_PAGE_X, "ADC");
@@ -315,9 +332,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(ADC_ABSOLUTE, "ADC");
@@ -338,9 +353,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         clockCycles += pageCrossed;
         if (ArgsHandler.debug)
@@ -362,9 +375,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         clockCycles += pageCrossed;
         if (ArgsHandler.debug)
@@ -386,9 +397,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(ADC_X_IND, "ADC");
@@ -408,9 +417,7 @@ public class Instructions {
         Registers.setZeroFlag(Registers.acc == 0);
         Registers.setCarryFlag(result > 0xFF);
         Registers.setNegativeFlag((Registers.acc & 0x80) != 0);
-        Registers.setOverflowFlag(
-                ((Registers.acc ^ value) & 0x80) == 0 &&
-                        ((Registers.acc ^ result) & 0x80) != 0);
+        Registers.setOverflowFlag(((Registers.acc ^ result) & (value ^ result) & 0x80) != 0);
 
         clockCycles += pageCrossed;
         if (ArgsHandler.debug)
@@ -643,7 +650,7 @@ public class Instructions {
             short currentAddress = Registers.pc;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -665,7 +672,7 @@ public class Instructions {
             short currentAddress = Registers.pc;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -685,7 +692,7 @@ public class Instructions {
             short currentAddress = Registers.pc;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -749,7 +756,7 @@ public class Instructions {
             short currentAddress = Registers.pc;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -772,7 +779,7 @@ public class Instructions {
             clockCycles++;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -797,7 +804,7 @@ public class Instructions {
             clockCycles++;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -817,41 +824,43 @@ public class Instructions {
         int clockCycles = 7;
 
         Registers.pc++;
-        /*
-         * Ignoring for time being
-         * // Return to BRK + 2 but + 1 since opcode ( next instruction )
-         * short returnAddress = (short) (Registers.pc + 2);
-         * 
-         * // Push return address for routine on the stack
-         * byte higherByte = (byte) ((returnAddress >> 8));
-         * byte lowerByte = (byte) (returnAddress);
-         * 
-         * // Set interrupt flag
-         * sei();
-         * 
-         * byte status = Registers.status;
-         * status |= Registers.UNUSED_MASK;
-         * status |= Registers.BREAK_MASK;
-         * 
-         * // Store the return address of next instruction onto the stack
-         * Ram.writeToStack(Registers.sp, lowerByte);
-         * Registers.sp--;
-         * Ram.writeToStack(Registers.sp, higherByte);
-         * Registers.sp--;
-         * Ram.writeToStack(Registers.sp, status);
-         * Registers.sp--;
-         * 
-         * // Get interrupt vector
-         * lowerByte = Ram.read((short)0xFFFE);
-         * higherByte = Ram.read((short)0xFFFF);
-         * 
-         * // Set PC to new address (little endian)
-         * Registers.pc = (short)((higherByte << 8) | lowerByte);
-         * Registers.pc--;
-         * 
-         * // Clear interrupt flag
-         * Registers.setInterruptFlag(false);
-         */
+
+        if (ignoreBRK) {
+            return clockCycles;
+        }
+
+        // Return to BRK + 2 but + 1 since opcode ( next instruction )
+        short returnAddress = (short) (Registers.pc);
+
+        // Push return address for routine on the stack
+        byte higherByte = (byte) ((returnAddress >> 8));
+        byte lowerByte = (byte) (returnAddress);
+
+        // Set interrupt flag
+        sei();
+
+        byte status = Registers.status;
+        status |= Registers.UNUSED_MASK;
+        status |= Registers.BREAK_MASK;
+
+        // Store the return address of next instruction onto the stack
+        Ram.writeToStack(Registers.sp, lowerByte);
+        Registers.sp--;
+        Ram.writeToStack(Registers.sp, higherByte);
+        Registers.sp--;
+        Ram.writeToStack(Registers.sp, status);
+        Registers.sp--;
+
+        // Get interrupt vector
+        lowerByte = Ram.read((short) 0xFFFE);
+        higherByte = Ram.read((short) 0xFFFF);
+
+        // Set PC to new address (little endian)
+        Registers.pc = (short) ((higherByte << 8) | lowerByte);
+        Registers.pc--;
+
+        // Clear interrupt flag
+        Registers.setInterruptFlag(false);
 
         if (ArgsHandler.debug)
             Debug.printASM(BRK_IMPLIED, "BRK");
@@ -870,7 +879,7 @@ public class Instructions {
             clockCycles++;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -893,7 +902,7 @@ public class Instructions {
             clockCycles++;
             Registers.pc++;
             byte offset = Cpu.fetchNextValue();
-            Registers.pc++;
+            // Registers.pc++;
             Registers.pc += offset;
             pageCrossed = ((currentAddress & 0xFF00) != (Registers.pc & 0xFF00)) ? 1 : 0;
             clockCycles += pageCrossed;
@@ -1492,7 +1501,6 @@ public class Instructions {
 
         // Convert them to little endian
         short address = fetchAbsoluteXAddress();
-        address = (short) ((address + Registers.x) & 0xFFFF);
 
         // Read and increment value in memory
         byte value = Ram.read(address);
@@ -1562,7 +1570,7 @@ public class Instructions {
         Registers.pc--;
 
         if (ArgsHandler.debug)
-            Debug.printASM(JMP_IND, "JMP");
+            Debug.printASM(JMP_IND, "JMP I");
         return clockCycles;
     }
 
@@ -1845,8 +1853,8 @@ public class Instructions {
         Registers.pc++;
         Registers.y = Cpu.fetchNextValue();
 
-        Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
+        Registers.setZeroFlag(Registers.y == 0);
+        Registers.setNegativeFlag((Registers.y & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(LDY, "LDY");
@@ -1860,8 +1868,8 @@ public class Instructions {
         byte address = fetchZeroPageAddress();
         Registers.y = Ram.read(address);
 
-        Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
+        Registers.setZeroFlag(Registers.y == 0);
+        Registers.setNegativeFlag((Registers.y & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(LDY_ZERO_PAGE, "LDY");
@@ -1874,8 +1882,8 @@ public class Instructions {
         byte address = fetchZeroPageXAddress();
         Registers.y = Ram.read(address);
 
-        Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
+        Registers.setZeroFlag(Registers.y == 0);
+        Registers.setNegativeFlag((Registers.y & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(LDY_ZERO_PAGE_X, "LDY");
@@ -1888,8 +1896,8 @@ public class Instructions {
         short address = fetchAddress();
         Registers.y = Ram.read(address);
 
-        Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
+        Registers.setZeroFlag(Registers.y == 0);
+        Registers.setNegativeFlag((Registers.y & 0x80) != 0);
 
         if (ArgsHandler.debug)
             Debug.printASM(LDY_ABSOLUTE, "LDY");
@@ -1902,8 +1910,8 @@ public class Instructions {
         short address = fetchAbsoluteXAddress();
         Registers.y = Ram.read(address);
 
-        Registers.setZeroFlag(Registers.x == 0);
-        Registers.setNegativeFlag((Registers.x & 0x80) != 0);
+        Registers.setZeroFlag(Registers.y == 0);
+        Registers.setNegativeFlag((Registers.y & 0x80) != 0);
 
         clockCycles += pageCrossed;
 
@@ -2442,7 +2450,6 @@ public class Instructions {
 
         // Return to previous address
         Registers.pc = address;
-        Registers.pc--;
 
         if (ArgsHandler.debug)
             Debug.printASM(RTI_IMPLIED, "RTI");
@@ -2452,11 +2459,6 @@ public class Instructions {
     /**
      * Return to sub routine.
      * 
-     * // Store the return address of next instruction onto the stack
-     * Ram.writeToStack(Registers.sp, lowerByte);
-     * Registers.sp--;
-     * Ram.writeToStack(Registers.sp, higherByte);
-     * Registers.sp--;
      */
     public static int rts() {
         int clockCycles = 6;
@@ -2801,7 +2803,7 @@ public class Instructions {
         byte value = Ram.read(address);
         Registers.status &= (value & Registers.CARRY_MASK);
         Registers.setCarryFlag((value & 0x01) != 0);
-        value >>>= 1;
+        value >>= 1;
         Ram.write(address, value);
         Registers.acc ^= value;
         Registers.setZeroFlag(Registers.acc == 0);
@@ -2816,9 +2818,8 @@ public class Instructions {
 
         short address = fetchAddress();
         byte value = Ram.read(address);
-        Registers.status &= (value & Registers.CARRY_MASK);
         Registers.setCarryFlag((value & 0x01) != 0);
-        value >>>= 1;
+        value >>= 1;
         Ram.write(address, value);
         Registers.acc ^= value;
         Registers.setZeroFlag(Registers.acc == 0);
@@ -2834,9 +2835,8 @@ public class Instructions {
 
         short address = fetchIndYAddress();
         byte value = Ram.read(address);
-        Registers.status &= (value & Registers.CARRY_MASK);
         Registers.setCarryFlag((value & 0x01) != 0);
-        value >>>= 1;
+        value >>= 1;
         Ram.write(address, value);
         Registers.acc ^= value;
         Registers.setZeroFlag(Registers.acc == 0);
@@ -2852,9 +2852,8 @@ public class Instructions {
 
         byte address = fetchZeroPageXAddress();
         byte value = Ram.read(address);
-        Registers.status &= (value & Registers.CARRY_MASK);
         Registers.setCarryFlag((value & 0x01) != 0);
-        value >>>= 1;
+        value >>= 1;
         Ram.write(address, value);
         Registers.acc ^= value;
         Registers.setZeroFlag(Registers.acc == 0);
@@ -2870,9 +2869,8 @@ public class Instructions {
 
         short address = fetchAbsoluteYAddress();
         byte value = Ram.read(address);
-        Registers.status &= (value & Registers.CARRY_MASK);
         Registers.setCarryFlag((value & 0x01) != 0);
-        value >>>= 1;
+        value >>= 1;
         Ram.write(address, value);
         Registers.acc ^= value;
         Registers.setZeroFlag(Registers.acc == 0);
@@ -2888,9 +2886,8 @@ public class Instructions {
 
         short address = fetchAbsoluteXAddress();
         byte value = Ram.read(address);
-        Registers.status &= (value & Registers.CARRY_MASK);
         Registers.setCarryFlag((value & 0x01) != 0);
-        value >>>= 1;
+        value >>= 1;
         Ram.write(address, value);
         Registers.acc ^= value;
         Registers.setZeroFlag(Registers.acc == 0);
@@ -3130,7 +3127,7 @@ public class Instructions {
     }
 
     /**
-     * Transfer X to stack pointer
+     * Transfer Stack Pointer to X
      */
     public static int tsx() {
         int clockCycles = 2;
@@ -3162,7 +3159,7 @@ public class Instructions {
     }
 
     /**
-     * Transfer the stack pointer to X
+     * Transfer X to Stack Pointer
      */
     public static int txs() {
         int clockCycles = 2;

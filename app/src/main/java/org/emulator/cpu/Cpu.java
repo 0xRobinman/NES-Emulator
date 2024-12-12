@@ -7,8 +7,7 @@ import org.emulator.memory.Ram;
  */
 public class Cpu {
 
-    public Cpu()
-    {
+    public Cpu() {
 
     }
 
@@ -16,7 +15,7 @@ public class Cpu {
      * PPU will call this upon entering V-Blank
      */
     public static void NmiInterrupt() {
-        
+        Instructions.nmi_interrupt();
     }
 
     /**
@@ -792,27 +791,26 @@ public class Cpu {
             case (byte) 0x2B -> {
                 return Instructions.anc();
             }
-        
+
             default -> // Handle unknown opcode
                 throw new IllegalArgumentException("Unknown opcode: " + opcode);
         }
-        
+
     }
 
     public static byte fetchNextValue() {
-        return  Ram.read(Registers.pc);
+        return Ram.read(Registers.pc);
     }
 
     public void readResetVector() {
-        byte [] resetVector = { 
-            Ram.read((short) 0xFFFC), 
-            Ram.read((short) 0xFFFD)
+        byte[] resetVector = {
+                Ram.read((short) 0xFFFC),
+                Ram.read((short) 0xFFFD)
         };
         // Convert to little endian
         Registers.pc = (short) ((resetVector[1] & 0xFF) << 8 | (resetVector[0] & 0xFF));
     }
 
-    
     public int executeCycle() {
 
         int clockCycles = executeInstruction(fetchNextValue());
