@@ -1,5 +1,4 @@
 # NES Emulator 
-Status: incomplete, working version by Christmas. 
 
 
 
